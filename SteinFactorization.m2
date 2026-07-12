@@ -23,7 +23,7 @@ pairMax = ll -> {
     max apply(ll,p -> p#1)
     };
 
-yasudaBound = (ff,d1,d2,c1,c2) -> (
+bigradedTruncationBound = (ff,d1,d2,c1,c2) -> (
     dsum := d1+d2;
     bb := pairMax {
         aPair(ff,d1+1,d2+1),
@@ -47,7 +47,7 @@ steinHomData = (ambient,igraph,d1,d2,c1,c2) -> (
     maxHomologicalDegree := d1+d2+1;
     ff := res(nn,LengthLimit=>maxHomologicalDegree);
     rr := ambient/igraph;
-    bound := yasudaBound(ff,d1,d2,c1,c2);
+    bound := bigradedTruncationBound(ff,d1,d2,c1,c2);
     truncation := truncate(bound,rr^1);
     rawHomModule := Hom(truncation,rr^1,MinimalGenerators=>true);
     nonnegativeHom := truncate({0,0},rawHomModule);

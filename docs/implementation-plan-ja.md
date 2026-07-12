@@ -54,7 +54,7 @@
 ## 4. Macaulay2 実装の分割
 
 1. `validateInput`: 二重斉次性、prime/reduced、全射（elimination image）、graph projection を検査。
-2. `yasudaBound`: `res(coker gens I_Gamma)` の shifts から上の `r` を計算。添付コードで実装済み。
+2. `bigradedTruncationBound`: `res(coker gens I_Gamma)` の shifts から上の `r` を計算。添付コードで実装済み。
 3. `orthantTruncation`: `Truncations` package の `truncate({r1,r2},R^1)` により `R_{>=r}` の有限 presentation を作る。Macaulay2 1.13 以降は multidegree の成分ごとの順序を直接扱う。
 4. `globalHomModule`: `Hom_R(R_{>=r},R)` を計算し、first degree `0` かつ second degree `>=0` の homogeneous generators を抽出する。試作ではここまで実装済み。次にこれを有限 A-module presentation として完全にパッケージ化する。
 5. `coordinateAlgebra`: `gamma` 評価、局所化、kernel/elimination から `C` を生成。
