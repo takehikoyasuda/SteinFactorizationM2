@@ -111,7 +111,7 @@ Thus the Stein intermediate is the source $\mathbb{P}^1$, embedded as the conic 
 
 The next example is the composition
 
-$$\mathbb{P}^1\times\mathbb{P}^2\longrightarrow\mathbb{P}^2 \xrightarrow{[x_0:x_1:x_2]\mapsto[x_0^2:x_1^2:x_2^2]} \mathbb{P}^2.$$
+$$\mathbb{P}^1\times\mathbb{P}^2\longrightarrow\mathbb{P}^2 \xlongrightarrow{[x_0:x_1:x_2]\mapsto[x_0^2:x_1^2:x_2^2]} \mathbb{P}^2.$$
 
 The projection has connected $\mathbb{P}^1$-fibers, while the second map is finite. The relevant part of the test input and output is:
 
