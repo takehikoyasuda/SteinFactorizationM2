@@ -9,7 +9,7 @@
 
 We implement a prototype of a Stein factorization algorithm in Macaulay2 and test it on several explicit projective maps. The implementation follows the bigraded Hom-module construction in the author's algorithm:
 
-$$C=\operatorname{Hom}_R(R_{\geq r},R)_{(0,\geq 0)}$$
+$$C=\mathrm{Hom}_R(R_{\geq r},R)_{(0,\geq 0)}$$
 
 The module is used to reconstruct a graded coordinate algebra for the Stein intermediate scheme and, where possible, the graph of the connected-fiber morphism. This note is not intended as a formal verification of the algorithm; rather, it records a reproducible computational experiment that demonstrates the practical feasibility of the construction on concrete examples. All calculations are included in the repository and can be reproduced with Macaulay2 1.24.11 or later. The code and this note were written essentially by an AI system, with minor edits by the author; see [Use of AI](#use-of-ai-in-the-implementation).
 
@@ -25,7 +25,7 @@ a Stein factorization is a decomposition
 
 $$Y\xrightarrow{h} Z\xrightarrow{g} X$$
 
-in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (so that $h$ has connected fibers) and $g$ is finite; concretely $Z=\operatorname{Spec}_X f_*\mathcal{O}_Y$. The purpose of this project is to turn an algorithm described by Yasuda (2026) into an executable Macaulay2 prototype and to see how it behaves on concrete examples from projective geometry.
+in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (so that $h$ has connected fibers) and $g$ is finite; concretely $Z=\mathrm{Spec}_X f_*\mathcal{O}_Y$. The purpose of this project is to turn an algorithm described by Yasuda (2026) into an executable Macaulay2 prototype and to see how it behaves on concrete examples from projective geometry.
 
 The input is the graph of $f$ represented as a bigraded projective scheme. If
 
@@ -39,11 +39,11 @@ then the variables in the source block have degree $(1,0)$ and those in the targ
 
 For a sufficiently large bidegree $r=(r_1,r_2)$, the implementation computes
 
-$$C=\operatorname{Hom}_R(R_{\geq r},R)_{(0,\geq0)}.$$
+$$C=\mathrm{Hom}_R(R_{\geq r},R)_{(0,\geq0)}.$$
 
 The truncation bound is obtained from shifts in a bounded bigraded free resolution of $R$ over the ambient polynomial ring. This is the computational counterpart of the bound in Corollary 4.3 of [Yasuda (2026)](#references). The bigraded construction extends the monograded global extension module computation of [Smith (2000)](#references) to the bigraded setting.
 
-For $r$ large enough, $\operatorname{Hom}_R(R_{\geq r},R)$ computes the sections of the structure sheaf of $\Gamma_f\cong Y$, so its $(0,n)$-part is
+For $r$ large enough, $\mathrm{Hom}_R(R_{\geq r},R)$ computes the sections of the structure sheaf of $\Gamma_f\cong Y$, so its $(0,n)$-part is
 $$H^0(Y,f^*\mathcal{O}_X(n))=H^0(X,f_*\mathcal{O}_Y\otimes\mathcal{O}_X(n))=H^0(Z,g^*\mathcal{O}_X(n)).$$
 That is, the $(0,\geq0)$-strand is the section ring of the Stein intermediate $Z$ with respect to $g^*\mathcal{O}_X(1)$. This is why the examples below produce Veronese section rings rather than the usual homogeneous coordinate rings: the polarization on $Z$ is pulled back from $X$.
 
@@ -146,7 +146,7 @@ Here $Z=\mathbb{P}^2$ carries the polarization $g^*\mathcal{O}(1)=\mathcal{O}(2)
 
 ### The blow-up of a line in $\mathbb{P}^3$
 
-We next take the blow-down $\operatorname{Bl}_L(\mathbb{P}^3)\to\mathbb{P}^3$ along a line $L$, followed by the coordinatewise square map on $\mathbb{P}^3$. The main numerical checks are:
+We next take the blow-down $\mathrm{Bl}_L(\mathbb{P}^3)\to\mathbb{P}^3$ along a line $L$, followed by the coordinatewise square map on $\mathbb{P}^3$. The main numerical checks are:
 
 ```
 numgens igraph, codim igraph
@@ -213,7 +213,7 @@ In the table below, $\dim$ is the Krull dimension of the computed Stein coordina
 | $\mathbb{P}^1$ quadratic map | $(1,0)$ | 2 | $H(1)=3$ | prime |
 | $\mathbb{P}^1$ cubic map | $(2,0)$ | 2 | twisted cubic | prime |
 | $\mathbb{P}^1\times\mathbb{P}^2$ | $(2,0)$ | 3 | $H(1)=6,H(2)=15$ | prime |
-| $\operatorname{Bl}_L(\mathbb{P}^3)$ | $(2,0)$ | 4 | $H(1)=10,H(2)=35$ | prime |
+| $\mathrm{Bl}_L(\mathbb{P}^3)$ | $(2,0)$ | 4 | $H(1)=10,H(2)=35$ | prime |
 | Twisted-cubic blow-up | $(2,0)^*$ | 4 | $H(1)=10,H(2)=35$ | partial |
 
 The star (*) indicates a supplied experimental bound rather than a bound computed from the full minimal resolution. 
