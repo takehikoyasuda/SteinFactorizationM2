@@ -2,3 +2,5 @@
 *.log
 *.aux
 .DS_Store
+/output/
+/tmp/

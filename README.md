@@ -47,6 +47,7 @@ M2 --no-readline --stop -q tests/blowup-twisted-cubic.m2
 ```text
 SteinFactorization.m2        reusable implementation
 tests/basic.m2               basic and Veronese regression tests
+tests/global-hom.m2          general bigraded global Hom regression tests
 tests/mori-fiber-space.m2    P1 x P2 -> P2 example
 tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
@@ -55,7 +56,22 @@ docs/status-ja.md
 benchmarks/
 ```
 
-## Main API
+## Main M2 functions
+
+For arbitrary bigraded (R)-modules (M,N), use:
+
+```m2
+data = bigradedGlobalHomData(
+    S, M, N, NoverS, d1, d2, c1, c2)
+```
+
+Here `NoverS` is the same target module (N), presented as an
+`S`-module after restriction along `S -> R`.  The explicit presentation is
+needed because Proposition 4.2 reads the shifts in an `S`-free resolution of
+(N).  The returned `data` contains the certified bound, both resolutions,
+the truncation of (M), and `Hom_R(M_{>=r},N)_{>=0}`.
+
+For the Stein-factorization specialization (M=N=R):
 
 ```m2
 data = steinHomData(S, IGraph, d1, d2, c1, c2)
@@ -100,4 +116,3 @@ Current performance issue:
 ## License
 
 No license has been selected yet.
-

@@ -1,7 +1,8 @@
 # 技術ノート
 
-- `YasudaSteinM2-note.tex`: 日本語LaTeX原稿
+- `YasudaSteinM2-note.tex`: English LaTeX manuscript
 - `YasudaSteinM2-note.pdf`: 生成済みPDF
+- `index.html`: MathJax付きのウェブ版。関数ごとのコード表示とCopyボタンを含む。
 
 LuaLaTeXでビルドする。
 
