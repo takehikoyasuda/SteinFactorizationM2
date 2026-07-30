@@ -51,9 +51,7 @@ tests/global-hom.m2          general bigraded global Hom regression tests
 tests/mori-fiber-space.m2    P1 x P2 -> P2 example
 tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
-docs/implementation-plan-ja.md
-docs/status-ja.md
-benchmarks/
+report/                      technical notes and summary PDF
 ```
 
 ## Main M2 functions
