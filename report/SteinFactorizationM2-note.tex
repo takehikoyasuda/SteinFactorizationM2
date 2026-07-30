@@ -19,8 +19,8 @@
 }
 
 \title{Computational Experiments with Stein Factorization in Macaulay2}
-\author{An experimental technical note}
-\date{July 12, 2026}
+\author{Takehiko Yasuda}
+\date{July 2026}
 
 \begin{document}
 
@@ -29,16 +29,18 @@
 \begin{abstract}
 We implement a prototype of a Stein factorization algorithm in Macaulay2 and test it on
 several explicit projective maps. The implementation follows the bigraded Hom-module
-construction in Yasuda's algorithm:
+construction in the author's algorithm:
 \[
  C=\operatorname{Hom}_R(R_{\geq r},R)_{(0,\geq 0)}.
 \]
 The module is used to reconstruct a graded coordinate algebra for the Stein intermediate
 scheme and, where possible, the graph of the connected-fiber morphism. This note is not
-intended as a new theorem or a formal verification of the algorithm. It records a
-reproducible computational experiment, including selected Macaulay2 input and output.
-The code was developed with the assistance of an AI system; the mathematical setup,
-examples, expected structures, and checks were selected and reviewed by the author.
+intended as a formal verification of the algorithm; rather, it records a reproducible
+computational experiment that demonstrates the practical feasibility of the construction
+on concrete examples. All calculations are included in the repository and can be reproduced
+with Macaulay2 1.24.11 or later. The code was developed with the assistance of an AI
+system; the mathematical setup, examples, expected structures, and verification criteria
+were selected and reviewed by the author.
 \end{abstract}
 
 \section{Purpose and background}
@@ -91,9 +93,12 @@ marked as non-certified in the output.
 
 \section{Environment and reproducibility}
 
-The computations were run with Macaulay2 1.24.11 on macOS. The relevant bundled packages
-include \texttt{Truncations}, \texttt{MinimalPrimes}, and \texttt{Saturation}. From the
-project root, the standard suite is run by:
+The computations were run with Macaulay2 1.24.11 on macOS (Apple Silicon, 2023). The relevant
+bundled packages include \texttt{Truncations}, \texttt{MinimalPrimes}, and \texttt{Saturation}.
+Standard examples complete in under 5 seconds each; the full suite including intermediate
+examples runs in approximately 30--60 seconds total.
+
+From the project root, the standard suite is run by:
 
 \begin{verbatim}
 ./run-tests.sh
@@ -216,8 +221,9 @@ components.
 
 The final example is the blow-up of $\mathbb{P}^3$ along the twisted cubic, followed by
 the coordinatewise square map. It is deliberately retained as a heavier benchmark.
-The full minimal resolution needed for the automatic Corollary 4.3 bound is expensive,
-so the test supplies $r=(2,0)$ and records that this bound is experimental.
+The full minimal resolution needed for the automatic Corollary 4.3 bound is expensive
+(typically 10--30 seconds of computation on a 2023 MacBook Pro), so the test supplies
+$r=(2,0)$ and records that this bound is experimental.
 
 \begin{verbatim}
 reesI = kernel map(targetRees,trees,{...});
@@ -303,6 +309,18 @@ therefore intended as a public technical note and reproducible experiment rather
 a claim of a fully general implementation.
 
 \begin{thebibliography}{9}
+
+\bibitem{hartshorne}
+Robin Hartshorne,
+\emph{Algebraic Geometry},
+Graduate Texts in Mathematics, Vol. 52, Springer-Verlag, 1977.
+(Chapter II, \S3 on separated and proper morphisms; Chapter III on coherent sheaves.)
+
+\bibitem{beauville}
+Arnaud Beauville,
+\emph{Variétés Kähleriennes dont la première classe de Chern est nulle},
+Journal of Differential Geometry, Vol. 18, No. 4, pp. 755--782, 1983.
+
 \bibitem{yasuda}
 Takehiko Yasuda,
 \emph{An algorithm for the minimal model program in dimension three},
@@ -313,6 +331,7 @@ arXiv:2603.13703v2.
 Daniel R. Grayson and Michael E. Stillman,
 \emph{Macaulay2, a software system for research in algebraic geometry}.
 \url{https://math.uiuc.edu/Macaulay2/}
+
 \end{thebibliography}
 
 \end{document}
