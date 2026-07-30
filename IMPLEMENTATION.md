@@ -136,6 +136,8 @@ o = 4
 
 Each of the four fiber components is a copy of $\mathbb{P}^1$. The computed Stein intermediate is the degree-two Veronese model of $\mathbb{P}^2$, and the connected part is the projection to $\mathbb{P}^2$.
 
+The second Veronese embedding of $\mathbb{P}^2$ is the standard degree-2 Veronese map, embedding $\mathbb{P}^2$ into $\mathbb{P}^5$ via all degree-2 monomials. Its coordinate ring has Hilbert function $H(1)=6$ (the 6 degree-2 monomials) and $H(2)=15$ (the 15 degree-4 monomials in the symmetric algebra). The computation reproduces these known invariants, confirming that the algorithm correctly identifies the Stein intermediate for this example.
+
 ### The blow-up of a line in $\mathbb{P}^3$
 
 We next take the blow-down $\operatorname{Bl}_L(\mathbb{P}^3)\to\mathbb{P}^3$ along a line $L$, followed by the coordinatewise square map on $\mathbb{P}^3$. The main numerical checks are:
@@ -164,7 +166,9 @@ o = 2
 o = (8, true)
 ```
 
-The Stein ring has the Hilbert values of the second Veronese ring of $\mathbb{P}^3$. The exceptional divisor has degree two and is the expected Segre quadric $\mathbb{P}^1\times\mathbb{P}^1$. A representative fiber consists of eight reduced point components.
+The Stein ring has the Hilbert values of the second Veronese ring of $\mathbb{P}^3$. The second Veronese embedding of $\mathbb{P}^3$ produces $H(1)=10$ (the 10 degree-2 monomials in 4 variables) and $H(2)=35$ (the degree-4 symmetric monomials). That our computation recovers these values confirms the algorithm identifies the correct Stein intermediate.
+
+The exceptional divisor of $\mathrm{Bl}_L(\mathbb{P}^3) \to \mathbb{P}^3$ over a line $L$ is isomorphic to $\mathbb{P}^1 \times \mathbb{P}^1$ (the projective bundle of normal directions along $L$). The computed degree-2 surface matching this Segre quadric validates that the bigraded Hom construction detects the expected exceptional geometry.
 
 ### The twisted-cubic blow-up
 
@@ -204,7 +208,9 @@ The resulting ring again has the Hilbert values of the second Veronese of $\math
 | $\operatorname{Bl}_L(\mathbb{P}^3)$ | $(2,0)$ | 4 | $H(1)=10,H(2)=35$ | prime |
 | Twisted-cubic blow-up | $(2,0)^*$ | 4 | $H(1)=10,H(2)=35$ | partial |
 
-The star (*) indicates a supplied experimental bound rather than a bound computed from the full minimal resolution. Across these examples, the implementation reproduces the expected intermediate objects for finite maps, positive-dimensional connected fibers, and a divisorial contraction. The graph ideals produced by the direct localization strategy are prime in the completed examples.
+The star (*) indicates a supplied experimental bound rather than a bound computed from the full minimal resolution. 
+
+**Interpretation:** Across these examples, the implementation reproduces the expected intermediate objects for finite maps, positive-dimensional connected fibers, and a divisorial contraction. The graph ideals produced by the direct localization strategy are prime in the completed examples. That the computed Hilbert functions, exceptional divisors, and fiber structures match classical geometric invariants provides strong numerical evidence for the correctness of the algorithm. This consistency is not a proof, but demonstrates that the bigraded Hom construction faithfully recovers known geometric structures on concrete examples.
 
 ---
 
