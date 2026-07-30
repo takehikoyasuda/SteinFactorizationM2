@@ -41,7 +41,7 @@ For a sufficiently large bidegree $r=(r_1,r_2)$, the implementation computes
 
 $$C=\operatorname{Hom}_R(R_{\geq r},R)_{(0,\geq0)}.$$
 
-The truncation bound is obtained from shifts in a bounded bigraded free resolution of $R$ over the ambient polynomial ring. This is the computational counterpart of the bound in Corollary 4.3 of [Yasuda (2026)](#references).
+The truncation bound is obtained from shifts in a bounded bigraded free resolution of $R$ over the ambient polynomial ring. This is the computational counterpart of the bound in Corollary 4.3 of [Yasuda (2026)](#references). The bigraded construction extends the monograded global extension module computation of [Smith (2000)](#references) to the bigraded setting.
 
 The main public functions are:
 
@@ -235,10 +235,12 @@ This project shows that the bigraded Hom-module construction can be used in a pr
 
 ## References
 
-- **Hartshorne, R.** (1977). *Algebraic Geometry*. Graduate Texts in Mathematics, Vol. 52, Springer-Verlag.  
-  (Chapter II, §3 on separated and proper morphisms; Chapter III on coherent sheaves.)
+- **Smith, G. G.** (2000). Computing global extension modules. *Journal of Symbolic Computation*, 29(4), 729–746.  
+  (Monograded version of global Hom computation, foundational for the bigraded extension.)
 
-- **Beauville, A.** (1983). Variétés Kähleriennes dont la première classe de Chern est nulle. *Journal of Differential Geometry*, 18(4), 755–782.
+- **Stacks Project Authors.** Stein factorization.  
+  https://stacks.math.columbia.edu/  
+  (Definition and basic properties of Stein factorization in scheme theory.)
 
 - **Yasuda, T.** (2026). An algorithm for the minimal model program in dimension three. arXiv:2603.13703v2.  
   https://arxiv.org/abs/2603.13703
