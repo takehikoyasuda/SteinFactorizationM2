@@ -1,4 +1,4 @@
-# YasudaSteinM2
+# SteinFactorizationM2
 
 Macaulay2 prototype for the Stein factorization algorithm in Takehiko Yasuda,
 *An algorithm for the minimal model program in dimension three*, §4–§5 and

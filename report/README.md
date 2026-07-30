@@ -1,7 +1,7 @@
 # 技術ノート
 
-- `YasudaSteinM2-note.tex`: English LaTeX manuscript
-- `YasudaSteinM2-note.pdf`: 生成済みPDF
+- `SteinFactorizationM2-note.tex`: English LaTeX manuscript
+- `SteinFactorizationM2-note.pdf`: 生成済みPDF
 - `index.html`: MathJax付きのウェブ版。関数ごとのコード表示とCopyボタンを含む。
 
 LuaLaTeXでビルドする。
@@ -9,7 +9,7 @@ LuaLaTeXでビルドする。
 ```sh
 TEXMFVAR=/tmp/yasuda-texmf-var \
 TEXMFCONFIG=/tmp/yasuda-texmf-config \
-lualatex -interaction=nonstopmode YasudaSteinM2-note.tex
+lualatex -interaction=nonstopmode SteinFactorizationM2-note.tex
 ```
 
 The manuscript summarizes the current Macaulay2 implementation, test examples,
