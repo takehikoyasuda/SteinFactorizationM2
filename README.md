@@ -2,7 +2,7 @@
 
 Macaulay2 prototype for the Stein factorization algorithm in Takehiko Yasuda,
 *An algorithm for the minimal model program in dimension three*, §4–§5 and
-Algorithm 1 (arXiv:2603.13703v2).
+Algorithm 1 ([arXiv:2603.13703v2](https://arxiv.org/abs/2603.13703v2)).
 
 The project computes the bigraded Hom module
 
@@ -46,24 +46,16 @@ M2 --no-readline --stop -q tests/blowup-twisted-cubic.m2
 
 ```text
 SteinFactorization.m2        reusable implementation
+IMPLEMENTATION.md            technical note: construction, examples, outputs
 tests/basic.m2               basic and Veronese regression tests
 tests/global-hom.m2          general bigraded global Hom regression tests
 tests/mori-fiber-space.m2    P1 x P2 -> P2 example
 tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
-report/                      technical notes (LaTeX source)
 ```
 
-## Building the technical note
-
-From the project root:
-
-```sh
-cd report
-lualatex -interaction=nonstopmode SteinFactorizationM2-note.tex
-```
-
-Requires LuaLaTeX with standard packages (amsmath, listings, hyperref, etc.).
+The technical note [IMPLEMENTATION.md](IMPLEMENTATION.md) describes the
+construction, the worked examples, and the actual Macaulay2 output.
 
 ## Main M2 functions
 
@@ -115,12 +107,32 @@ Implemented:
 - direct graph closure through localization and a weighted Rees parameter;
 - regression examples with finite, fiber-type, and divisorial contractions.
 
+Not covered:
+
+- only standard bigraded input is tested. The paper allows weighted
+  projective spaces and the construction reads degrees from the ring, but no
+  weighted example has been run, and `certifiedHomogeneousGraph` assumes an
+  unweighted target;
+- `d1,d2,c1,c2` are trusted as given. Note `c1,c2` are the *sums of the
+  degrees* of the variables in each block (equal to the variable counts only
+  in the standard graded case).
+
 Current performance issue:
 
 - deep minimal resolutions can dominate the exact-bound route;
 - finite `A`-module generators can be algebraically redundant, making graph
   elimination unnecessarily expensive. Algebra-generator minimization is in
   progress.
+
+## Use of AI
+
+The code, the tests, and the technical note were written essentially by an AI
+system (Claude), with minor edits by the author.  The author has read them and
+believes them to be correct, but has not checked every detail.  The algorithm
+itself is the one in the paper above and nothing conceptually difficult is
+attempted here, and each example is checked automatically against
+independently known geometry, so large errors are unlikely — but this is a
+research prototype, not verified software.
 
 ## License
 

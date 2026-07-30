@@ -1,8 +1,18 @@
 needsPackage "Truncations";
 
--- Core implementation of Section 5.1 of Yasuda, arXiv:2603.13703v2.
+-- Core implementation of Section 5.1 of Yasuda, arXiv:2603.13703v2
+-- (https://arxiv.org/abs/2603.13703v2).
 -- Input convention: variables of the source block have degrees (positive,0),
 -- variables of the target block have degrees (0,positive).
+-- Argument convention, matching Section 4 of the paper: block s consists of the
+-- variables x_{s,0},...,x_{s,ds}, and cs = sum_t deg(x_{s,t}) is the sum of their
+-- degrees.  In the standard bigraded case cs is the number of variables in the
+-- block; under a weighted grading the weight sum must be passed instead.
+-- The arguments are not checked against the degrees of the ambient ring, and all
+-- examples and tests here are standard bigraded (degrees (1,0) and (0,1)), so the
+-- weighted case has never been exercised.  Note also that certifiedHomogeneousGraph
+-- below assumes an unweighted target: it requires the supplied coordinates to share
+-- one degree and builds the product ring with target degrees (0,1).
 
 componentMax = (ll,k) -> (
     if #ll == 0 then -infinity else max apply(ll,d -> d#k)
