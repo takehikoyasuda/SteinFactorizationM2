@@ -111,9 +111,9 @@ Thus the Stein intermediate is the source $ℙ^1$, embedded as the conic $X_0X_1
 
 The next example is the composition
 
-$$ℙ^1\timesℙ^2\longrightarrowℙ^2 \xlongrightarrow{[x_0:x_1:x_2]\mapsto[x_0^2:x_1^2:x_2^2]} ℙ^2.$$
+$$ℙ^1 \times ℙ^2 \to ℙ^2 \to ℙ^2,$$
 
-The projection has connected $ℙ^1$-fibers, while the second map is finite. The relevant part of the test input and output is:
+where the second map is $[x_0:x_1:x_2] \mapsto [x_0^2:x_1^2:x_2^2]$. The projection has connected $ℙ^1$-fibers, while the second map is finite. The relevant part of the test input and output is:
 
 ```
 igraph = kernel graphParametrization;
@@ -174,7 +174,11 @@ o = (8, true)
 
 The Stein ring has the Hilbert values of the second Veronese ring of $ℙ^3$, as expected for $Z=ℙ^3$ with $g^*𝒪(1)=𝒪(2)$: $H(1)=10$ (the 10 monomials of degree 2 in 4 variables) and $H(2)=35$ (the 35 monomials of degree 4 in 4 variables). The computation recovers both values. Note that the presentation produced by the algorithm uses 11 variables, one of the degree-two module generators being redundant as an algebra generator; the quotient ring is nevertheless the expected one.
 
-The exceptional divisor of $\mathrm{Bl}_L(ℙ^3) \to ℙ^3$ over a line $L$ is $ℙ(N_{L/ℙ^3})=ℙ(𝒪(1)^{⊕2})\congℙ^1\timesℙ^1$. The computation returns a surface of degree 2, in agreement with the Segre quadric; the check is carried out on the source side, independently of the Hom construction.
+The exceptional divisor of $\mathrm{Bl}_L(ℙ^3) \to ℙ^3$ over a line $L$ is the projective bundle
+
+$$ℙ(N_{L/ℙ^3}) = ℙ(𝒪(1)^{\oplus 2}) \cong ℙ^1 \times ℙ^1.$$
+
+The computation returns a surface of degree 2, in agreement with the Segre quadric; the check is carried out on the source side, independently of the Hom construction.
 
 ### The twisted-cubic blow-up
 
