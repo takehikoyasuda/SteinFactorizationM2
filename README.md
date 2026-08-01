@@ -62,8 +62,15 @@ backslash in `\,` and `\\`, which between them rule out macros, multi-line
 formulas and equation numbers.  Rebuild it with
 
 ```sh
-pdflatex IMPLEMENTATION.tex      # twice, for the cross-references
+make
 ```
+
+The Makefile pins `SOURCE_DATE_EPOCH`, so pdflatex does not stamp the build time
+into the file and rebuilding an unedited source leaves the PDF byte-identical --
+without it every rebuild would show up as a git change, and since a PDF is
+already compressed, git cannot delta it and each such non-change would cost a
+full copy in the history.  Bump the date in the Makefile when the note is
+substantively revised.
 
 ## Main M2 functions
 
