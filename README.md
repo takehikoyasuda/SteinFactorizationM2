@@ -46,7 +46,7 @@ M2 --no-readline --stop -q tests/blowup-twisted-cubic.m2
 
 ```text
 SteinFactorization.m2        reusable implementation
-IMPLEMENTATION.md            technical note: construction, examples, outputs
+IMPLEMENTATION.tex/.pdf      technical note: construction, examples, outputs
 tests/basic.m2               basic and Veronese regression tests
 tests/global-hom.m2          general bigraded global Hom regression tests
 tests/mori-fiber-space.m2    P1 x P2 -> P2 example
@@ -54,8 +54,16 @@ tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
 ```
 
-The technical note [IMPLEMENTATION.md](IMPLEMENTATION.md) describes the
-construction, the worked examples, and the actual Macaulay2 output.
+The technical note [IMPLEMENTATION.pdf](IMPLEMENTATION.pdf) describes the
+construction, the worked examples, and the actual Macaulay2 output.  It is
+written in LaTeX rather than markdown because GitHub's markdown renderer refuses
+`\newcommand`, `\operatorname`, `\mathbb`, `\mathcal` and `\tag`, and eats the
+backslash in `\,` and `\\`, which between them rule out macros, multi-line
+formulas and equation numbers.  Rebuild it with
+
+```sh
+pdflatex IMPLEMENTATION.tex      # twice, for the cross-references
+```
 
 ## Main M2 functions
 
