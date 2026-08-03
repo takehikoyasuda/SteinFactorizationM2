@@ -22,7 +22,7 @@ igraph = kernel graphParametrization;
 assert(numgens igraph == 26);
 assert(codim igraph == 7);
 
-d = steinHomData(sgraph,igraph,7,3,8,4);
+d = steinHomData(sgraph,igraph);
 assert(d#"bound" == {2,0});
 assert(#d#"steinGeneratorIndices" == 8);
 

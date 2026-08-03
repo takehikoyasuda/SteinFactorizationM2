@@ -37,7 +37,7 @@ assert(errorsOut(() -> blockDegreeData sZero));
 use sWt;
 iIso = ideal(x0*y1-x1*y0^2);
 assert(isHomogeneous iIso);
-dIso = steinHomDataFromRing(sWt,iIso);
+dIso = steinHomData(sWt,iIso);
 assert(dIso#"certifiedBound");
 assert(dIso#"bound" == {0,0});
 assert(dIso#"steinGeneratorDegrees" == {{0,0}});
@@ -53,7 +53,7 @@ assert(isPrime((directSteinGraph(dIso,cIso))#"graphIdeal"));
 -- Veronese subring of k[u,v]: one conic relation and H(n) = 2n+1.
 use sWt;
 iSq = ideal(x0*y1^2-x1*y0^4);
-dSq = steinHomDataFromRing(sWt,iSq);
+dSq = steinHomData(sWt,iSq);
 assert(dSq#"certifiedBound");
 assert(dSq#"bound" == {2,0});
 assert(dSq#"steinGeneratorDegrees" == {{0,0},{0,1}});
@@ -64,14 +64,7 @@ assert(dim(cSq#"ring") == 2);
 assert(apply({1,2,3},n -> hilbertFunction(n,cSq#"ring")) == {3,5,7});
 assert(isPrime((directSteinGraph(dSq,cSq))#"graphIdeal"));
 
--- Test 4: the explicit-argument entry points check c1,c2 instead of trusting
--- them.  Passing the variable count 2 for the weighted block used to enlarge
--- the bound silently -- correct but slower, and reported as certified.
-use sWt;
-assert(errorsOut(() -> steinHomData(sWt,iSq,1,1,2,2)));
-assert((steinHomData(sWt,iSq,1,1,3,2))#"bound" == {2,0});
-
--- Test 5: a weighted source survives the graph construction.  The map
+-- Test 4: a weighted source survives the graph construction.  The map
 -- P(1,2) -> P^1 given by (r0^2,r1) is the one of Test 2, so the graph it
 -- builds must run through the pipeline to the same answers.
 sourceWt = QQ[r0,r1,Degrees=>{1,2}];
@@ -80,13 +73,13 @@ assert(gWtSource#"basePointFree");
 -- The source block keeps its own degrees rather than being flattened to 1.
 assert(degrees(gWtSource#"productRing") == {{1,0},{2,0},{0,1},{0,1}});
 assert(blockDegreeData(gWtSource#"productRing") == {1,1,3,2});
-dFromGraph = steinHomDataFromRing(gWtSource#"productRing",gWtSource#"graphIdeal");
+dFromGraph = steinHomData(gWtSource#"productRing",gWtSource#"graphIdeal");
 assert(dFromGraph#"bound" == {0,0});
 targetVars = drop(flatten entries vars (gWtSource#"productRing"),2);
 cFromGraph = steinCoordinateAlgebra(dFromGraph,0,targetVars);
 assert(apply({1,2,3},n -> hilbertFunction(n,cFromGraph#"ring")) == {2,3,4});
 
--- Test 6: a weighted target.  A morphism to P(a_0,...,a_n) is cut out by forms
+-- Test 5: a weighted target.  A morphism to P(a_0,...,a_n) is cut out by forms
 -- with deg(h_i) = a_i*e for one common e; (r0,r1^2) with weights (1,2) is the
 -- isomorphism P^1 -> P(1,2).
 sourceStd = QQ[r0,r1];

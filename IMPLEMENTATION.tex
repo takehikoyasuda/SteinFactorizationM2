@@ -81,10 +81,13 @@ geometry.
 The input is the graph of \(f\) represented as a bigraded projective
 scheme. If
 \[R=S/I_{\Gamma_f},\]
-then the variables in the source block have degree \((1,0)\) and those
-in the target block have degree \((0,1)\). The two gradings make it
-possible to separate the source direction from the target direction
-during the Hom-module computation.
+then the variables in the source block have degrees \((\ast,0)\) and
+those in the target block \((0,\ast)\), the starred entries being
+positive; in the standard case they are \((1,0)\) and \((0,1)\), and
+allowing larger values is what admits weighted projective spaces. What
+matters is the split itself: it is what makes it possible to separate the
+source direction from the target direction during the Hom-module
+computation.
 
 \section{The computational construction}\label{sec:construction}
 
@@ -114,42 +117,97 @@ That subring is classically called the \(d\)-th Veronese subring, since
 it is the homogeneous coordinate ring of \(Z\) in its \(d\)-uple Veronese
 embedding; the sections below refer to it by that name.
 
-The main public functions are:
+There are three main functions, one for each step of the construction:
+compute the truncated Hom module, read a coordinate algebra for \(Z\) off
+it, and recover the graph of \(h\). Each returns a table that the next one
+consumes, so they are meant to be called in this order.
 
 \begin{verbatim}
-data  = steinHomData(S, graphIdeal, d1, d2, c1, c2)
+data  = steinHomData(S, graphIdeal)
 cData = steinCoordinateAlgebra(data, gammaIndex, baseImages)
 gData = directSteinGraph(data, cData)
 \end{verbatim}
 
-Here \texttt{d1}, \texttt{d2} are the dimensions of the ambient
-(weighted) projective spaces of the source and target blocks --- that
-is, block \(s\) has variables \(x_{s,0},\dots,x_{s,d_s}\) --- and
-\texttt{c1}, \texttt{c2} are the sums \(c_s=\sum_{t=0}^{d_s}c_{s,t}\) of
-the degrees of those variables, as in Proposition 4.2. In the standard
-bigraded case \(c_s\) is simply the number of variables in the block;
-under a weighted grading it is the larger weight sum. All four numbers
-are determined by the degrees of the ambient ring, so they can be left
-off --- \texttt{steinHomDataFromRing(S, graphIdeal)} reads them off ---
-and when they are supplied they are checked against the ring rather than
-trusted.
+\subsubsection*{The Hom module ---
+  \texorpdfstring{{\normalfont\ttfamily steinHomData}}{steinHomData}}
 
-What the construction requires is only that the variables split into a
-source block of degrees \((\ast,0)\) and a target block of degrees
-\((0,\ast)\): that split is what lets the first degree see the source
-direction alone, so that the \((0,\geq0)\)-strand means what it does.
-The degrees within a block need not be \(1\), and weighted projective
-spaces are allowed, as in the paper. The examples of Section
+\texttt{S} is the ambient bigraded polynomial ring, the coordinate ring
+of the product of the two (weighted) projective spaces in which the graph
+sits; its variables are the two blocks described above.
+\texttt{graphIdeal} is the bihomogeneous ideal \(I_{\Gamma_f}\subset S\)
+cutting the graph out of that product, so that \(R=S/I_{\Gamma_f}\). The
+map \(f\) is never passed as such: it enters only through its graph.
+
+Those two arguments are all that is needed. Corollary 4.3 is stated in
+terms of the dimensions \(d_s\) of the two ambient (weighted) projective
+spaces and the sums \(c_s=\sum_{t=0}^{d_s}c_{s,t}\) of the degrees of the
+variables in each block, but the degrees of \texttt{S} already determine
+all four, so they are computed rather than passed. (\texttt{blockDegreeData
+S} returns them, and Section \ref{sec:weighted} uses it to exhibit the one
+case where they are not obvious: \(c_s\) is a weight sum, equal to the
+number of variables in the block only when every weight is \(1\).)
+
+The returned \texttt{data} carries everything the later steps need: the
+bound \(\mathbf{r}\) and whether it is certified, the ring \(R\), the
+truncation \(R_{\geq\mathbf{r}}\), the module
+\(\Hom_R(R_{\geq\mathbf{r}},R)_{\geq0}\) together with the matrix of its
+generators, and the indices of those generators lying in the
+\((0,\geq0)\)-strand.
+
+\subsubsection*{The coordinate algebra ---
+  \texorpdfstring{{\normalfont\ttfamily steinCoordinateAlgebra}}{steinCoordinateAlgebra}}
+
+A homomorphism \(\varphi\colon R_{\geq\mathbf{r}}\to R\) is not itself an
+element of \(R\), so to see the strand as a ring one has to evaluate.
+Fix a nonzero \(\gamma\in R_{\geq\mathbf{r}}\) and send \(\varphi\) to
+\(\varphi(\gamma)/\gamma\), a quotient formed in the localization
+\(R[1/\gamma]\); this is Lemma 5.2. \texttt{gammaIndex} is which
+generator of \(R_{\geq\mathbf{r}}\) to use as that \(\gamma\); the
+examples all take \texttt{0}.
+
+\texttt{baseImages} lists elements of \(R\) generating the subring
+\(A=R_{(0,\geq0)}\), over which the strand is a finite module. Since
+\(R\) is generated in the two block degrees, \(A\) is exactly the subring
+generated by the target-block variables, so in every example here
+\texttt{baseImages} is the list of coordinates of \(X\). The point of
+the whole computation is that the strand \(C\) is larger than \(A\): the
+extra algebra generators are the evaluated Hom generators, and they are
+what distinguishes \(Z\) from \(X\).
+
+The returned \texttt{cData} holds the graded coordinate algebra of \(Z\)
+under \texttt{"ring"} and its relations under \texttt{"definingIdeal"},
+presented on the chosen generators --- first the \texttt{baseImages},
+then one variable per evaluated Hom generator. It also keeps \(A\), the
+strand as a finite \(A\)-module with its presentation, and the
+localization and \(\gamma\) that were used.
+
+\subsubsection*{The graph ---
+  \texorpdfstring{{\normalfont\ttfamily directSteinGraph}}{directSteinGraph}}
+
+At this point the generators of \(Z\) are available as actual functions
+on \(\Gamma_f\cong Y\), so the graph of \(h\colon Y\to Z\) can be formed
+directly: it is the kernel of the ring map sending each variable of
+\(Z\) to the corresponding function, computed in \(R[1/\gamma]\), with a
+Rees parameter carrying the projective scaling of \(Z\). Working in the
+localization is what saturates the result. The returned \texttt{gData}
+holds that ideal under \texttt{"graphIdeal"}, in a ring whose variables
+are those of \texttt{S} together with the algebra generators of \(Z\).
+
+\medskip
+
+What the construction requires of \texttt{S} is only that the variables
+split into a source block of degrees \((\ast,0)\) and a target block of
+degrees \((0,\ast)\): that split is what lets the first degree see the
+source direction alone, so that the \((0,\geq0)\)-strand means what it
+does. The degrees within a block need not be \(1\), and weighted
+projective spaces are allowed, as in the paper. The examples of Section
 \ref{sec:examples} are all standard bigraded, but
 \texttt{tests/weighted.m2} runs the same construction over \(\PP(1,2)\).
-The first function computes the truncated Hom module and records the bound.
-The second evaluates selected Hom generators at a nonzero element
-\(\gamma\) and computes the defining relations of the resulting
-coordinate algebra. The third computes a graph closure from the
-evaluated generators in a localization. For examples where the minimal
-resolution is too expensive, the experimental entry point
-\texttt{steinHomDataAtBound} accepts a supplied bound. Such a
-computation is explicitly marked as non-certified in the output.
+
+For examples where the minimal resolution is too expensive, the
+experimental entry point \texttt{steinHomDataAtBound} accepts a supplied
+bound in place of a computed one, and returns the same kind of table with
+\texttt{"certifiedBound"} set to false.
 
 \section{Environment and reproducibility}\label{sec:reproducibility}
 
@@ -192,7 +250,7 @@ input and the main output.
 
 \begin{verbatim}
 i = ideal(y0^2*x1-y1^2*x0);
-d = steinHomData(S,i,1,1,2,2);
+d = steinHomData(S,i);
 c = steinCoordinateAlgebra(d,0,{x0,x1});
 
 d#"bound"
@@ -233,7 +291,7 @@ it is finite of degree two.
 \begin{verbatim}
 S = QQ[y0,y1,x0,x1,Degrees=>{{1,0},{2,0},{0,1},{0,1}}];
 i = ideal(x0*y1^2-x1*y0^4);
-d = steinHomDataFromRing(S,i);
+d = steinHomData(S,i);
 c = steinCoordinateAlgebra(d,0,{x0,x1});
 
 blockDegreeData S
@@ -251,11 +309,11 @@ o = (3, 5)
 
 The third entry of \texttt{blockDegreeData} is what separates this from
 the standard case: \(c_1=1+2=3\) is the weight sum, where the variable
-count would give \(2\). Passing \(2\) by hand does not fail loudly, since
-Corollary 4.3 subtracts \(c_1\) and too small a value only enlarges the
-bound --- the answer stays correct and the computation merely does more
-work. That silence is why the four numbers are now read off the ring
-rather than trusted.
+count would give \(2\). The distinction is invisible in the standard
+examples, and getting it wrong would not fail loudly either --- Corollary
+4.3 subtracts \(c_1\), so too small a value only enlarges the bound, and
+the answer would stay correct while the computation did more work. That is
+why the number is read off the ring instead of being asked for.
 
 Since \(y_0^2\) and \(y_1\) span the weighted degree-two part of
 \(k[y_0,y_1]\), they identify \(\PP(1,2)\) with \(\PP^1\), and under that
@@ -274,7 +332,7 @@ finite. The relevant part of the test input and output is:
 
 \begin{verbatim}
 igraph = kernel graphParametrization;
-d = steinHomData(sgraph,igraph,5,2,6,3);
+d = steinHomData(sgraph,igraph);
 c = steinCoordinateAlgebra(d,0,{y0,y1,y2});
 
 numgens igraph, codim igraph
@@ -320,7 +378,7 @@ numerical checks are:
 numgens igraph, codim igraph
 o = (26, 7)
 
-d = steinHomData(sgraph,igraph,7,3,8,4);
+d = steinHomData(sgraph,igraph);
 d#"bound", #d#"steinGeneratorIndices"
 o = ({2, 0}, 8)
 

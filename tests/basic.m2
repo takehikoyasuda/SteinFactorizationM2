@@ -3,14 +3,14 @@ load "SteinFactorization.m2";
 -- Test 1: identity P^1 -> P^1.
 s1 = QQ[y0,y1,x0,x1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
 iid = ideal(y0*x1-y1*x0);
-did = steinHomData(s1,iid,1,1,2,2);
+did = steinHomData(s1,iid);
 assert(did#"bound" == {0,0});
 assert(did#"steinGeneratorDegrees" == {{0,0}});
 
 -- Test 2: finite square map [s:t] -> [s^2:t^2].
 use s1;
 isq = ideal(y0^2*x1-y1^2*x0);
-dsq = steinHomData(s1,isq,1,1,2,2);
+dsq = steinHomData(s1,isq);
 assert(dsq#"bound" == {1,0});
 assert(dsq#"steinGeneratorDegrees" == {{0,0},{0,1}});
 csqGeneral = steinCoordinateAlgebra(dsq,0,{x0,x1});
@@ -34,7 +34,7 @@ assert(icsq == ideal(X0*X1-z^2));
 -- Proj C is the twisted cubic, hence still isomorphic to the source P^1.
 use s1;
 icu = ideal(y0^3*x1-y1^3*x0);
-dcu = steinHomData(s1,icu,1,1,2,2);
+dcu = steinHomData(s1,icu);
 assert(dcu#"bound" == {2,0});
 assert(dcu#"steinGeneratorDegrees" == {{0,0},{0,1},{0,1}});
 ccuGeneral = steinCoordinateAlgebra(dcu,0,{x0,x1});
@@ -102,7 +102,7 @@ param = QQ[ss,tt,uu,vv];
 graphParam = map(param,s2,
     {ss*uu,ss*vv,tt*uu,tt*vv,ss^3,tt^3});
 imixed = kernel graphParam;
-dmixed = steinHomData(s2,imixed,3,1,4,2);
+dmixed = steinHomData(s2,imixed);
 assert(dmixed#"bound" == {2,0});
 assert(dmixed#"steinGeneratorDegrees" == {{0,0},{0,1},{0,1}});
 cmixedGeneral = steinCoordinateAlgebra(dmixed,0,{x0,x1});
@@ -171,7 +171,7 @@ paramp2 = QQ[ps,pt,pu,lambda,mu];
 graphp2 = kernel map(paramp2,sp2,
     {ps*lambda,pt*lambda,pu*lambda,
      ps^2*mu,pt^2*mu,pu^2*mu});
-dp2 = steinHomData(sp2,graphp2,2,2,3,3);
+dp2 = steinHomData(sp2,graphp2);
 assert(dp2#"bound" == {2,0});
 assert(dp2#"steinGeneratorDegrees" ==
     {{0,0},{0,1},{0,1},{0,1}});
@@ -197,7 +197,7 @@ paramp2c = QQ[cs,ct,cu,clambda,cmu];
 graphp2c = kernel map(paramp2c,sp2c,
     {cs*clambda,ct*clambda,cu*clambda,
      cs^3*cmu,ct^3*cmu,cu^3*cmu});
-dp2c = steinHomData(sp2c,graphp2c,2,2,3,3);
+dp2c = steinHomData(sp2c,graphp2c);
 assert(dp2c#"bound" == {4,0});
 assert(#dp2c#"steinGeneratorIndices" == 9);
 assert(#select(dp2c#"steinGeneratorDegrees",d -> d == {0,1}) == 7);

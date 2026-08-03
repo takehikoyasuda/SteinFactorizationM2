@@ -11,7 +11,7 @@ M = R^1;
 N = R^1;
 NS = coker gens idiag;
 
-data = bigradedGlobalHomData(S,M,N,NS,1,1,2,2);
+data = bigradedGlobalHomData(S,M,N,NS);
 assert(data#"certifiedBound");
 assert(data#"bound" == {0,0});
 assert(degrees(data#"homModule") == {{0,0}});
@@ -20,7 +20,7 @@ assert(hilbertFunction({1,1},data#"homModule") == 3);
 -- A shifted source gives a genuinely different M.  The lower degree of its
 -- R-free presentation changes the certified truncation corner as in Prop. 4.2.
 Mshift = R^{{1,1}};
-shiftData = bigradedGlobalHomData(S,Mshift,N,NS,1,1,2,2);
+shiftData = bigradedGlobalHomData(S,Mshift,N,NS);
 assert(shiftData#"bound" == {1,1});
 assert(shiftData#"certifiedBound");
 

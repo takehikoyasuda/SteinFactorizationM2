@@ -84,8 +84,7 @@ substantively revised; it is what the PDF reports as its creation date.
 For arbitrary bigraded (R)-modules (M,N), use:
 
 ```m2
-data = bigradedGlobalHomData(
-    S, M, N, NoverS, d1, d2, c1, c2)
+data = bigradedGlobalHomData(S, M, N, NoverS)
 ```
 
 Here `NoverS` is the same target module (N), presented as an
@@ -97,21 +96,16 @@ the truncation of (M), and `Hom_R(M_{>=r},N)_{>=0}`.
 For the Stein-factorization specialization (M=N=R):
 
 ```m2
-data = steinHomData(S, IGraph, d1, d2, c1, c2)
+data = steinHomData(S, IGraph)
 cData = steinCoordinateAlgebra(data, gammaIndex, baseImages)
 gData = directSteinGraph(data, cData)
 ```
 
-`d1,d2,c1,c2` are determined by the degrees of `S`, so they can be left out:
-
-```m2
-data = steinHomDataFromRing(S, IGraph)
-```
-
-`blockDegreeData S` returns the same four numbers on their own.  When they are
-passed explicitly they are checked against `S` rather than trusted, which
-matters under a weighted grading, where `c1,c2` are the weight sums and not the
-variable counts.
+Corollary 4.3 is stated in terms of the block dimensions `d1,d2` and the sums
+`c1,c2` of the degrees of each block's variables, but the degrees of `S`
+determine all four, so they are computed rather than passed.  `blockDegreeData
+S` returns them if you want to see them; note that `c1,c2` are weight sums,
+equal to the variable counts only when every weight is 1.
 
 For a known or experimental truncation bound:
 

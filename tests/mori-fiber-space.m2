@@ -17,7 +17,7 @@ igraph = kernel graphParametrization;
 assert(numgens igraph == 12);
 assert(codim igraph == 4);
 
-d = steinHomData(sgraph,igraph,5,2,6,3);
+d = steinHomData(sgraph,igraph);
 assert(d#"bound" == {2,0});
 assert(d#"steinGeneratorDegrees" ==
     {{0,0},{0,1},{0,1},{0,1}});

@@ -6,13 +6,11 @@ needsPackage "Truncations";
 -- variables of the target block have degrees (0,positive).  Only the split into
 -- two blocks matters; the degrees within a block need not be 1, so weighted
 -- projective spaces are allowed, as in the paper.
--- Argument convention, matching Section 4 of the paper: block s consists of the
--- variables x_{s,0},...,x_{s,ds}, and cs = sum_t deg(x_{s,t}) is the sum of their
--- degrees.  In the standard bigraded case cs is the number of variables in the
--- block; under a weighted grading it is the weight sum, which is larger.
--- All four numbers are determined by the ambient ring: blockDegreeData reads them
--- off, steinHomDataFromRing supplies them for you, and the entry points that take
--- them explicitly now check them rather than trusting them.
+-- Corollary 4.3 is stated in terms of the four numbers of Section 4: block s is
+-- x_{s,0},...,x_{s,ds}, and cs = sum_t deg(x_{s,t}).  They are not arguments to
+-- anything public, because the ambient ring already determines them -- see
+-- blockDegreeData, which the entry points call for themselves.  Note that cs is
+-- the weight sum, equal to the variable count only when every weight is 1.
 
 -- The block structure is visible in the ambient degrees: a source variable has
 -- degree (positive,0) and a target variable (0,positive).  Returns the four
@@ -35,17 +33,6 @@ blockDegreeData = ambient -> (
      #targetDegs-1,
      sum apply(sourceDegs,d -> d#0),
      sum apply(targetDegs,d -> d#1)}
-    );
-
--- Corollary 4.3 reads c1,c2 as weight sums, so passing the variable counts under a
--- weighted grading silently enlarges the bound: correct but slower.  Passing them
--- too large would shrink it, and the result would not be certified at all.  Since
--- the ring determines all four, disagreement is an error rather than a choice.
-checkBlockDegreeData = (ambient,d1,d2,c1,c2) -> (
-    expected := blockDegreeData ambient;
-    if {d1,d2,c1,c2} != expected then
-        error("d1,d2,c1,c2 disagree with the ambient degrees: got "
-            | toString {d1,d2,c1,c2} | ", expected " | toString expected);
     );
 
 componentMax = (ll,k) -> (
@@ -97,8 +84,9 @@ bigradedGlobalHomBound = (sourceResolution,targetAmbientResolution,d1,d2,c1,c2) 
 
 -- Note: supplying targetModuleOverAmbient explicitly ensures that the bound uses the
 --       S-free resolution required by Proposition 4.2, rather than an R-free resolution.
-bigradedGlobalHomData = (ambient,sourceModule,targetModule,targetModuleOverAmbient,d1,d2,c1,c2) -> (
-    checkBlockDegreeData(ambient,d1,d2,c1,c2);
+bigradedGlobalHomData = (ambient,sourceModule,targetModule,targetModuleOverAmbient) -> (
+    bd := blockDegreeData ambient;
+    (d1,d2,c1,c2) := (bd#0,bd#1,bd#2,bd#3);
     sourceResolution := res sourceModule;
     maxHomologicalDegree := d1+d2+1;
     targetAmbientResolution := res(targetModuleOverAmbient,
@@ -127,8 +115,9 @@ bigradedGlobalHomData = (ambient,sourceModule,targetModule,targetModuleOverAmbie
 isSteinDegree = dd -> (#dd == 2 and dd#0 == 0 and dd#1 >= 0);
 
 -- Note: the bound is computed from the resolution, so certifiedBound is true.
-steinHomData = (ambient,igraph,d1,d2,c1,c2) -> (
-    checkBlockDegreeData(ambient,d1,d2,c1,c2);
+steinHomData = (ambient,igraph) -> (
+    bd := blockDegreeData ambient;
+    (d1,d2,c1,c2) := (bd#0,bd#1,bd#2,bd#3);
     nn := coker gens igraph;
     -- Corollary 4.3 only reads shifts through homological degree |d|+1.
     -- Avoid asking for any unnecessary tail of the resolution.
@@ -160,13 +149,6 @@ steinHomData = (ambient,igraph,d1,d2,c1,c2) -> (
         "steinGeneratorIndices" => wanted,
         "steinGeneratorDegrees" => apply(wanted,i -> (degrees nonnegativeHom)#i)
         }
-    );
-
--- The four numbers are determined by the ambient ring, so under a weighted
--- grading this is the entry point to prefer: it cannot be told the wrong c1,c2.
-steinHomDataFromRing = (ambient,igraph) -> (
-    bd := blockDegreeData ambient;
-    steinHomData(ambient,igraph,bd#0,bd#1,bd#2,bd#3)
     );
 
 -- Note: no free resolution is computed, so certifiedBound is false.
