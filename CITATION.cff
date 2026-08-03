@@ -1,0 +1,34 @@
+# GitHub reads this file and shows a "Cite this repository" button.
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+title: "SteinFactorizationM2: a Macaulay2 prototype for Stein factorization"
+abstract: >-
+  Macaulay2 prototype implementing the Stein factorization algorithm of
+  Yasuda, An algorithm for the minimal model program in dimension three,
+  sections 4-5 and Algorithm 1.  It computes the bigraded Hom module
+  Hom_R(R_{>=r},R)_(0,>=0), recovers a graded coordinate algebra for the
+  Stein intermediate, and builds the connected-fiber graph from evaluated
+  Hom generators.
+type: software
+authors:
+  - family-names: Yasuda
+    given-names: Takehiko
+    orcid: "https://orcid.org/0000-0001-8875-4533"
+    affiliation: Osaka University
+license: CC0-1.0
+repository-code: "https://github.com/takehikoyasuda/SteinFactorizationM2"
+keywords:
+  - Stein factorization
+  - minimal model program
+  - computational algebraic geometry
+  - Macaulay2
+references:
+  - type: article
+    title: An algorithm for the minimal model program in dimension three
+    authors:
+      - family-names: Yasuda
+        given-names: Takehiko
+        orcid: "https://orcid.org/0000-0001-8875-4533"
+    year: 2026
+    url: "https://arxiv.org/abs/2603.13703"
+    doi: 10.48550/arXiv.2603.13703
