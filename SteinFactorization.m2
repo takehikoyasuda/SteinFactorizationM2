@@ -177,24 +177,24 @@ steinHomDataAtBound = (ambient,igraph,bound) -> (
     );
 
 -- Note: Lemma 5.2 uses psi_i(gamma)/gamma as the corresponding coordinate function.
-evaluateSteinGenerators = (data,gammaIndex) -> (
-    ee := data#"evaluationMatrix";
-    apply(data#"steinGeneratorIndices",i -> ee_(gammaIndex,i))
+evaluateSteinGenerators = (homData,gammaIndex) -> (
+    ee := homData#"evaluationMatrix";
+    apply(homData#"steinGeneratorIndices",i -> ee_(gammaIndex,i))
     );
 
 -- Note: the degree-(0,0) Hom generator is the unit and is omitted as an extra algebra generator.
 -- TODO: organize the finite A-module presentation of the full strand more completely.
-steinCoordinateAlgebra = (data,gammaIndex,baseImages) -> (
-    rr := data#"ring";
-    tt := data#"truncation";
-    hh := data#"homModule";
-    wanted := data#"steinGeneratorIndices";
+steinCoordinateAlgebra = (homData,gammaIndex,baseImages) -> (
+    rr := homData#"ring";
+    tt := homData#"truncation";
+    hh := homData#"homModule";
+    wanted := homData#"steinGeneratorIndices";
     extra := select(wanted,i -> (degrees hh)#i != {0,0});
     gamma := (gens tt)_(0,gammaIndex);
     dg := degree gamma;
     ll0 := rr[steinInverse,Degrees=>{{-dg#0,-dg#1}}];
     ll := ll0/ideal(steinInverse*sub(gamma,ll0)-1);
-    ee := data#"evaluationMatrix";
+    ee := homData#"evaluationMatrix";
     evals := apply(extra,i -> ee_(gammaIndex,i));
     images := join(
         apply(baseImages,q -> sub(q,ll)),
@@ -204,7 +204,7 @@ steinCoordinateAlgebra = (data,gammaIndex,baseImages) -> (
         apply(baseImages,q -> {(degree q)#1}),
         apply(extra,i -> {((degrees hh)#i)#1})
         );
-    kk := coefficientRing data#"ambient";
+    kk := coefficientRing homData#"ambient";
     -- Build A=R_(0,>=0) from the supplied base generators, then implement the
     -- paper's finite A-module strand presentation via pushForward.
     apoly := kk[Variables=>#baseImages,
@@ -238,9 +238,9 @@ steinCoordinateAlgebra = (data,gammaIndex,baseImages) -> (
     );
 
 -- Note: matching fingerprints do not constitute a mathematical proof of the bound.
-steinFingerprint = (coordinateData,hilbertMax) -> (
-    cc := coordinateData#"ring";
-    aaModule := coordinateData#"strandAsAModule";
+steinFingerprint = (algebraData,hilbertMax) -> (
+    cc := algebraData#"ring";
+    aaModule := algebraData#"strandAsAModule";
     {
         dim cc,
         apply(toList(0..hilbertMax),i -> hilbertFunction(i,cc)),
@@ -267,7 +267,7 @@ steinDataByStabilization = (
         fp := steinFingerprint(cd,hilbertMax);
         history = append(history,new HashTable from {
             "bound"=>bound,"fingerprint"=>fp,
-            "homData"=>hd,"coordinateData"=>cd});
+            "homData"=>hd,"algebraData"=>cd});
         if previousFingerprint =!= null and fp == previousFingerprint then
             consecutiveMatches = consecutiveMatches+1
         else consecutiveMatches = 0;
@@ -282,7 +282,7 @@ steinDataByStabilization = (
         "certifiedBound"=>false,
         "chosenBound"=>chosenHomData#"bound",
         "homData"=>chosenHomData,
-        "coordinateData"=>chosenCoordinateData,
+        "algebraData"=>chosenCoordinateData,
         "history"=>history,
         "stepsRun"=>counter,
         "consecutiveMatches"=>consecutiveMatches,
@@ -292,12 +292,12 @@ steinDataByStabilization = (
     );
 
 -- Method: use a localization and a Rees parameter, then take the kernel of the map.
-directSteinGraph = (data,coordinateData) -> (
-    ambient := data#"ambient";
-    rr := data#"ring";
-    pp := coordinateData#"polynomialRing";
-    ll := coordinateData#"localizationPresentation";
-    cimages := coordinateData#"images";
+directSteinGraph = (homData,algebraData) -> (
+    ambient := homData#"ambient";
+    rr := homData#"ring";
+    pp := algebraData#"polynomialRing";
+    ll := algebraData#"localizationPresentation";
+    cimages := algebraData#"images";
     avars := flatten entries vars ambient;
     zvars := flatten entries vars pp;
     na := #avars;

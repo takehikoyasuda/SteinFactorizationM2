@@ -69,7 +69,7 @@ minor edits by the author; see \hyperref[sec:ai]{Use of AI}.
 
 For a projective morphism of algebraic varieties
 \[f:Y\longrightarrow X,\]
-a Stein factorization is a decomposition
+a \emph{Stein factorization} is a decomposition
 \[Y\xrightarrow{h} Z\xrightarrow{g} X\]
 in which \(h\) is proper with \(h_*\sO_Y=\sO_Z\) (so that \(h\) has
 connected fibers) and \(g\) is finite; concretely
@@ -105,17 +105,32 @@ For \(\mathbf{r}\) large enough, \(\Hom_R(R_{\geq\mathbf{r}},R)\) computes the
 sections of the structure sheaf of \(\Gamma_f\cong Y\), so its
 \((0,n)\)-part is
 \[H^0(Y,f^*\sO_X(n))=H^0(X,f_*\sO_Y\otimes\sO_X(n))=H^0(Z,g^*\sO_X(n)).\]
-That is, the \((0,\geq0)\)-strand is the section ring of the Stein
-intermediate \(Z\) with respect to \(g^*\sO_X(1)\). That polarization is
-pulled back from \(X\), so it need not be \(\sO_Z(1)\): in every example
-below the finite map \(g\) is a coordinatewise power map, and
-\(g^*\sO_X(1)=\sO_Z(d)\) for some \(d>1\). What the strand computes is
-then not the full homogeneous coordinate ring of \(Z\), but the subring
-of it spanned by the graded pieces whose degree is divisible by \(d\) ---
-for \(Z=\PP^m\), the span of the monomials of degree \(d,2d,3d,\dots\).
-That subring is classically called the \(d\)-th Veronese subring, since
-it is the homogeneous coordinate ring of \(Z\) in its \(d\)-uple Veronese
-embedding; the sections below refer to it by that name.
+These parts are the summands of \(C\): the subscript in the display above
+is shorthand for the direct sum
+\[C=\Hom_R(R_{\geq\mathbf{r}},R)_{(0,\geq0)}
+  =\bigoplus_{n\geq0}\Hom_R(R_{\geq\mathbf{r}},R)_{(0,n)},\]
+in which the first degree is held at \(0\) while the second runs over all
+\(n\geq0\). A direct sum of graded pieces selected this way --- one
+coordinate of the bigrading fixed, the other free --- is called a
+\emph{strand}, and we call \(C\) the \((0,\geq0)\)-strand from here on.
+(The same word is used in a different sense for the linear part of a free
+resolution, which is not what is meant here.) So the
+\((0,\geq0)\)-strand is the section ring of the Stein intermediate \(Z\)
+with respect to \(g^*\sO_X(1)\). That polarization is pulled back from
+\(X\), so it need not be \(\sO_Z(1)\): in every example below the finite
+map \(g\) is a coordinatewise power map, and \(g^*\sO_X(1)=\sO_Z(d)\) for
+some \(d>1\). Write
+\[T=\bigoplus_{n\geq0}H^0(Z,\sO_Z(n))\]
+for the section ring of \(\sO_Z(1)\) itself, so that
+\(T=k[x_0,\dots,x_m]\) when \(Z=\PP^m\). What the strand computes is then
+not \(T\) but
+\[C=\bigoplus_{n\geq0}H^0(Z,\sO_Z(dn))=\bigoplus_{n\geq0}T_{dn}=T^{(d)},\]
+the subring of \(T\) spanned by the graded pieces whose degree is a
+multiple of \(d\) --- for \(Z=\PP^m\), the span of the monomials of degree
+\(d,2d,3d,\dots\). This \(T^{(d)}\) is classically called the \(d\)-th
+\emph{Veronese subring} of \(T\), since it is the coordinate ring of
+\(Z\) in its \(d\)-uple Veronese embedding; the sections below refer to it
+by that name.
 
 There are three main functions, one for each step of the construction:
 compute the truncated Hom module, read a coordinate algebra for \(Z\) off
@@ -123,9 +138,9 @@ it, and recover the graph of \(h\). Each returns a table that the next one
 consumes, so they are meant to be called in this order.
 
 \begin{verbatim}
-data  = steinHomData(S, graphIdeal)
-cData = steinCoordinateAlgebra(data, gammaIndex, baseImages)
-gData = directSteinGraph(data, cData)
+homData     = steinHomData(S, graphIdeal)
+algebraData = steinCoordinateAlgebra(homData, gammaIndex, baseImages)
+graphData   = directSteinGraph(homData, algebraData)
 \end{verbatim}
 
 \subsubsection*{The Hom module ---
@@ -135,35 +150,47 @@ gData = directSteinGraph(data, cData)
 of the product of the two (weighted) projective spaces in which the graph
 sits; its variables are the two blocks described above.
 \texttt{graphIdeal} is the bihomogeneous ideal \(I_{\Gamma_f}\subset S\)
-cutting the graph out of that product, so that \(R=S/I_{\Gamma_f}\). The
-map \(f\) is never passed as such: it enters only through its graph.
+cutting the graph out of that product, so that \(R=S/I_{\Gamma_f}\). 
 
-Those two arguments are all that is needed. Corollary 4.3 is stated in
-terms of the dimensions \(d_s\) of the two ambient (weighted) projective
-spaces and the sums \(c_s=\sum_{t=0}^{d_s}c_{s,t}\) of the degrees of the
-variables in each block, but the degrees of \texttt{S} already determine
-all four, so they are computed rather than passed. (\texttt{blockDegreeData
-S} returns them, and Section \ref{sec:weighted} uses it to exhibit the one
-case where they are not obvious: \(c_s\) is a weight sum, equal to the
-number of variables in the block only when every weight is \(1\).)
+% Those two arguments are all that is needed. Corollary 4.3 is stated in
+% terms of the dimensions \(d_s\) of the two ambient (weighted) projective
+% spaces and the sums \(c_s=\sum_{t=0}^{d_s}c_{s,t}\) of the degrees of the
+% variables in each block, but the degrees of \texttt{S} already determine
+% all four, so they are computed rather than passed. (\texttt{blockDegreeData
+% S} returns them, and Section \ref{sec:weighted} uses it to exhibit the one
+% case where they are not obvious: \(c_s\) is a weight sum, equal to the
+% number of variables in the block only when every weight is \(1\).)
 
-The returned \texttt{data} carries everything the later steps need: the
+The returned \texttt{homData} carries everything the later steps need: the
 bound \(\mathbf{r}\) and whether it is certified, the ring \(R\), the
 truncation \(R_{\geq\mathbf{r}}\), the module
-\(\Hom_R(R_{\geq\mathbf{r}},R)_{\geq0}\) together with the matrix of its
+\(\Hom_R(R_{\geq\mathbf{r}},R)_{\geq(0,0)}\) together with the matrix of its
 generators, and the indices of those generators lying in the
 \((0,\geq0)\)-strand.
 
 \subsubsection*{The coordinate algebra ---
   \texorpdfstring{{\normalfont\ttfamily steinCoordinateAlgebra}}{steinCoordinateAlgebra}}
 
-A homomorphism \(\varphi\colon R_{\geq\mathbf{r}}\to R\) is not itself an
-element of \(R\), so to see the strand as a ring one has to evaluate.
-Fix a nonzero \(\gamma\in R_{\geq\mathbf{r}}\) and send \(\varphi\) to
-\(\varphi(\gamma)/\gamma\), a quotient formed in the localization
-\(R[1/\gamma]\); this is Lemma 5.2. \texttt{gammaIndex} is which
-generator of \(R_{\geq\mathbf{r}}\) to use as that \(\gamma\); the
-examples all take \texttt{0}.
+The strand \(C\) consists of homomorphisms rather than of elements of
+\(R\), so it carries no evident multiplication. It acquires one by being
+realized inside a localization of \(R\): fix a nonzero
+\(\gamma\in R_{\geq\mathbf{r}}\) and send
+\[\varphi\longmapsto\varphi(\gamma)/\gamma\in R[1/\gamma].\]
+Here \(R\) is a domain, \(\Gamma_f\) being a variety, so this is injective
+and does not depend on which \(\gamma\) is chosen: for any other
+\(\gamma'\in R_{\geq\mathbf{r}}\) we have
+\(\gamma'\varphi(\gamma)=\varphi(\gamma'\gamma)=\gamma\varphi(\gamma')\),
+whence \(\varphi(\gamma)/\gamma=\varphi(\gamma')/\gamma'\). It therefore
+identifies \(C\) with a subring of \(R[1/\gamma]\), and the multiplication
+on \(C\) is the one inherited from that identification. This evaluation is
+Lemma 5.2.
+
+\texttt{gammaIndex} is an integer rather than a ring element: it is the
+position, counted from \texttt{0}, of \(\gamma\) in the list of generators
+of \(R_{\geq\mathbf{r}}\). By the independence just noted the subring
+obtained does not depend on it; only the localization the computation is
+carried out in does. The examples all take \texttt{0}, the first
+generator.
 
 \texttt{baseImages} lists elements of \(R\) generating the subring
 \(A=R_{(0,\geq0)}\), over which the strand is a finite module. Since
@@ -174,24 +201,71 @@ the whole computation is that the strand \(C\) is larger than \(A\): the
 extra algebra generators are the evaluated Hom generators, and they are
 what distinguishes \(Z\) from \(X\).
 
-The returned \texttt{cData} holds the graded coordinate algebra of \(Z\)
-under \texttt{"ring"} and its relations under \texttt{"definingIdeal"},
-presented on the chosen generators --- first the \texttt{baseImages},
-then one variable per evaluated Hom generator. It also keeps \(A\), the
-strand as a finite \(A\)-module with its presentation, and the
-localization and \(\gamma\) that were used.
+The returned \texttt{algebraData} holds the graded coordinate algebra of
+\(Z\) under \texttt{"ring"}. It is a quotient of a polynomial ring with
+one variable for each algebra generator that was used, in this order:
+first the \texttt{baseImages}, then one variable for each evaluated Hom
+generator. (The strand generator of bidegree \((0,0)\) is the unit of
+\(C\) and gets no variable of its own.) That order is what the printed
+output has to be read against: the relation \(p_0p_1-p_2^2\) of Section
+\ref{sec:quadratic} has \(p_0,p_1\) the two coordinates of \(X\) and
+\(p_2\) the single evaluated Hom generator. The relations themselves are
+under \texttt{"definingIdeal"}.
+
+The same \(C\) is also returned in a second form, as a module over \(A\)
+rather than as a ring, with its presentation. This is the form in which
+\(C\) is finitely generated: a finite presentation over \(A\) is what
+makes \(C\) computable at all, and \texttt{pushForward} is what produces
+it.
+
+Finally, \texttt{algebraData} keeps \(A\), the localization
+\(R[1/\gamma]\), and the \(\gamma\) that defines it. The next step needs
+the localization, since that is where the evaluated generators live.
 
 \subsubsection*{The graph ---
   \texorpdfstring{{\normalfont\ttfamily directSteinGraph}}{directSteinGraph}}
 
-At this point the generators of \(Z\) are available as actual functions
-on \(\Gamma_f\cong Y\), so the graph of \(h\colon Y\to Z\) can be formed
-directly: it is the kernel of the ring map sending each variable of
-\(Z\) to the corresponding function, computed in \(R[1/\gamma]\), with a
-Rees parameter carrying the projective scaling of \(Z\). Working in the
-localization is what saturates the result. The returned \texttt{gData}
-holds that ideal under \texttt{"graphIdeal"}, in a ring whose variables
-are those of \texttt{S} together with the algebra generators of \(Z\).
+The algebra generators of \(Z\) produced by the previous step are
+elements \(c_0,\dots,c_N\) of \(C\), homogeneous of bidegrees
+\((0,b_0),\dots,(0,b_N)\). 
+% They are not functions on \(Y\): a projective
+% variety has only the constants for global functions. By the display above
+% they are sections of line bundles,
+% \[c_i\in C_{b_i}=H^0(Y,f^*\sO_X(b_i))=H^0(Z,g^*\sO_X(b_i)),\]
+% realized concretely inside \(R[1/\gamma]\), which is where the
+% computation runs.
+
+Give \(Z\) a homogeneous coordinate \(z_i\) for each \(c_i\), of bidegree
+\((0,b_i)\), and form
+\[J=k[\,\text{variables of }S,\ z_0,\dots,z_N\,]\longrightarrow
+R[1/\gamma][t],\qquad
+x\longmapsto \bar x,\quad z_i\longmapsto c_i\,t^{b_i}.\]
+Each variable \(x\) of \(S\) goes to its class \(\bar x\) in
+\(R=S/I_{\Gamma_f}\), taken inside \(R[1/\gamma]\); that is all the first
+half of the map does. The graph of \(h\colon Y\to Z\) is the kernel, a
+bihomogeneous ideal of \(J\), and \(J\) is the coordinate ring of the
+product of the two spaces containing \(\Gamma_f\) with the weighted
+projective space in which the \(z_i\) place \(Z\). It is weighted exactly
+when the \(b_i\) are not all equal.
+
+The parameter \(t\) is what forces the answer to be a projective one.
+Writing \(F=\sum_\alpha F_\alpha z^\alpha\) with \(F_\alpha\) in the
+variables of \(S\),
+\[F\longmapsto\sum_\alpha
+F_\alpha\,c^\alpha\,t^{\langle b,\alpha\rangle},\]
+and since \(t\) is a free variable this vanishes if and only if
+\(\sum F_\alpha c^\alpha=0\) separately for each value of
+\(\langle b,\alpha\rangle=\sum_i b_i\alpha_i\). So \(t\) admits only those
+relations that are homogeneous in the \(z\)-degree, which are the ones
+that survive the scaling
+\(\lambda\cdot(z_0,\dots,z_N)=(\lambda^{b_0}z_0,\dots,\lambda^{b_N}z_N)\)
+under which the coordinates of \(Z\) are defined. Without it the kernel
+would also record that each \(z_i\) equals one particular element
+\(c_i\), which is not a statement about \(Z\) as a projective variety.
+
+Working over \(R[1/\gamma]\) rather than \(R\) is what saturates the
+result. The returned \texttt{graphData} holds the kernel under
+\texttt{"graphIdeal"}.
 
 \medskip
 

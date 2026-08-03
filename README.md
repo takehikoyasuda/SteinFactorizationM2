@@ -91,14 +91,14 @@ Here `NoverS` is the same target module (N), presented as an
 `S`-module after restriction along `S -> R`.  The explicit presentation is
 needed because Proposition 4.2 reads the shifts in an `S`-free resolution of
 (N).  The returned `data` contains the certified bound, both resolutions,
-the truncation of (M), and `Hom_R(M_{>=r},N)_{>=0}`.
+the truncation of (M), and `Hom_R(M_{>=r},N)_{>=(0,0)}`.
 
 For the Stein-factorization specialization (M=N=R):
 
 ```m2
-data = steinHomData(S, IGraph)
-cData = steinCoordinateAlgebra(data, gammaIndex, baseImages)
-gData = directSteinGraph(data, cData)
+homData     = steinHomData(S, IGraph)
+algebraData = steinCoordinateAlgebra(homData, gammaIndex, baseImages)
+graphData   = directSteinGraph(homData, algebraData)
 ```
 
 Corollary 4.3 is stated in terms of the block dimensions `d1,d2` and the sums
