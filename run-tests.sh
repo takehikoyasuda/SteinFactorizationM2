@@ -3,6 +3,7 @@ set -eu
 
 M2 --no-readline --stop -q tests/basic.m2
 M2 --no-readline --stop -q tests/global-hom.m2
+M2 --no-readline --stop -q tests/weighted.m2
 M2 --no-readline --stop -q tests/mori-fiber-space.m2
 M2 --no-readline --stop -q tests/blowup-line.m2
 

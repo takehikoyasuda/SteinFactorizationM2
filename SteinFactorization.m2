@@ -3,16 +3,50 @@ needsPackage "Truncations";
 -- Core implementation of Section 5.1 of Yasuda, arXiv:2603.13703v2
 -- (https://arxiv.org/abs/2603.13703v2).
 -- Input convention: variables of the source block have degrees (positive,0),
--- variables of the target block have degrees (0,positive).
+-- variables of the target block have degrees (0,positive).  Only the split into
+-- two blocks matters; the degrees within a block need not be 1, so weighted
+-- projective spaces are allowed, as in the paper.
 -- Argument convention, matching Section 4 of the paper: block s consists of the
 -- variables x_{s,0},...,x_{s,ds}, and cs = sum_t deg(x_{s,t}) is the sum of their
 -- degrees.  In the standard bigraded case cs is the number of variables in the
--- block; under a weighted grading the weight sum must be passed instead.
--- The arguments are not checked against the degrees of the ambient ring, and all
--- examples and tests here are standard bigraded (degrees (1,0) and (0,1)), so the
--- weighted case has never been exercised.  Note also that certifiedHomogeneousGraph
--- below assumes an unweighted target: it requires the supplied coordinates to share
--- one degree and builds the product ring with target degrees (0,1).
+-- block; under a weighted grading it is the weight sum, which is larger.
+-- All four numbers are determined by the ambient ring: blockDegreeData reads them
+-- off, steinHomDataFromRing supplies them for you, and the entry points that take
+-- them explicitly now check them rather than trusting them.
+
+-- The block structure is visible in the ambient degrees: a source variable has
+-- degree (positive,0) and a target variable (0,positive).  Returns the four
+-- numbers of Section 4, {d1,d2,c1,c2}, so that no caller has to restate them.
+blockDegreeData = ambient -> (
+    degs := degrees ambient;
+    if degreeLength ambient != 2 then
+        error "the ambient ring must be bigraded";
+    sourceDegs := select(degs,d -> d#1 == 0);
+    targetDegs := select(degs,d -> d#0 == 0);
+    -- A variable of degree (0,0) would be counted in both blocks, and one with
+    -- both components nonzero in neither; either way the counts disagree.
+    if #sourceDegs + #targetDegs != #degs then
+        error "every variable must have degree (positive,0) or (0,positive)";
+    if #sourceDegs == 0 or #targetDegs == 0 then
+        error "both blocks must be nonempty";
+    if not all(sourceDegs,d -> d#0 > 0) or not all(targetDegs,d -> d#1 > 0) then
+        error "variable degrees must be positive in their own block";
+    {#sourceDegs-1,
+     #targetDegs-1,
+     sum apply(sourceDegs,d -> d#0),
+     sum apply(targetDegs,d -> d#1)}
+    );
+
+-- Corollary 4.3 reads c1,c2 as weight sums, so passing the variable counts under a
+-- weighted grading silently enlarges the bound: correct but slower.  Passing them
+-- too large would shrink it, and the result would not be certified at all.  Since
+-- the ring determines all four, disagreement is an error rather than a choice.
+checkBlockDegreeData = (ambient,d1,d2,c1,c2) -> (
+    expected := blockDegreeData ambient;
+    if {d1,d2,c1,c2} != expected then
+        error("d1,d2,c1,c2 disagree with the ambient degrees: got "
+            | toString {d1,d2,c1,c2} | ", expected " | toString expected);
+    );
 
 componentMax = (ll,k) -> (
     if #ll == 0 then -infinity else max apply(ll,d -> d#k)
@@ -64,6 +98,7 @@ bigradedGlobalHomBound = (sourceResolution,targetAmbientResolution,d1,d2,c1,c2) 
 -- Note: supplying targetModuleOverAmbient explicitly ensures that the bound uses the
 --       S-free resolution required by Proposition 4.2, rather than an R-free resolution.
 bigradedGlobalHomData = (ambient,sourceModule,targetModule,targetModuleOverAmbient,d1,d2,c1,c2) -> (
+    checkBlockDegreeData(ambient,d1,d2,c1,c2);
     sourceResolution := res sourceModule;
     maxHomologicalDegree := d1+d2+1;
     targetAmbientResolution := res(targetModuleOverAmbient,
@@ -93,6 +128,7 @@ isSteinDegree = dd -> (#dd == 2 and dd#0 == 0 and dd#1 >= 0);
 
 -- Note: the bound is computed from the resolution, so certifiedBound is true.
 steinHomData = (ambient,igraph,d1,d2,c1,c2) -> (
+    checkBlockDegreeData(ambient,d1,d2,c1,c2);
     nn := coker gens igraph;
     -- Corollary 4.3 only reads shifts through homological degree |d|+1.
     -- Avoid asking for any unnecessary tail of the resolution.
@@ -124,6 +160,13 @@ steinHomData = (ambient,igraph,d1,d2,c1,c2) -> (
         "steinGeneratorIndices" => wanted,
         "steinGeneratorDegrees" => apply(wanted,i -> (degrees nonnegativeHom)#i)
         }
+    );
+
+-- The four numbers are determined by the ambient ring, so under a weighted
+-- grading this is the entry point to prefer: it cannot be told the wrong c1,c2.
+steinHomDataFromRing = (ambient,igraph) -> (
+    bd := blockDegreeData ambient;
+    steinHomData(ambient,igraph,bd#0,bd#1,bd#2,bd#3)
     );
 
 -- Note: no free resolution is computed, so certifiedBound is false.
@@ -309,13 +352,31 @@ directSteinGraph = (data,coordinateData) -> (
     );
 
 -- Note: saturation by the irrelevant ideal being the unit ideal certifies base-point-freeness.
-certifiedHomogeneousGraph = (sourcePolynomialRing,sourceIdeal,hImages) -> (
+--
+-- targetWeights gives the target the weighted projective space P(a_0,...,a_n).
+-- A morphism into it is cut out by forms with deg(h_i) = a_i*e for one common e,
+-- which is the unweighted "all degrees equal" when every a_i is 1.  The weights are
+-- required rather than inferred from the degrees of the h_i: inferring them would
+-- read a mistyped coordinate as a deliberate weighted target and proceed silently.
+certifiedWeightedGraph = (sourcePolynomialRing,sourceIdeal,hImages,targetWeights) -> (
+    if degreeLength sourcePolynomialRing != 1 then
+        error "the source ring must be singly graded";
     bb := sourcePolynomialRing/sourceIdeal;
     imgs := apply(hImages,q -> sub(q,bb));
     if #imgs == 0 then error "the coordinate list must be nonempty";
-    imageDegrees := apply(imgs,degree);
-    if not all(imageDegrees,d -> d == imageDegrees#0) then
-        error "the coordinates must have one common degree";
+    if #targetWeights != #imgs then
+        error "there must be one target weight per coordinate";
+    if not all(targetWeights,a -> a > 0) then
+        error "the target weights must be positive";
+    imageDegrees := apply(imgs,q -> (degree q)#0);
+    -- deg(h_i)/a_i must be one and the same e for every i.
+    if not all(#imgs,i -> imageDegrees#i % targetWeights#i == 0) then
+        error("the coordinate degrees " | toString imageDegrees
+            | " are not multiples of the target weights " | toString targetWeights);
+    ratios := apply(#imgs,i -> imageDegrees#i // targetWeights#i);
+    if not all(ratios,e -> e == ratios#0) then
+        error("the coordinate degrees " | toString imageDegrees
+            | " are not proportional to the target weights " | toString targetWeights);
     irr := ideal gens bb;
     baseIdeal := ideal imgs;
     basePointFree := saturate(baseIdeal,irr) == ideal(1_bb);
@@ -324,18 +385,24 @@ certifiedHomogeneousGraph = (sourcePolynomialRing,sourceIdeal,hImages) -> (
     kk := coefficientRing sourcePolynomialRing;
     ny := numgens sourcePolynomialRing;
     nz := #imgs;
+    -- The source block keeps the degrees it has in sourcePolynomialRing, so a
+    -- weighted source survives the lift; only the block index is added.
+    sourceDegs := apply(degrees sourcePolynomialRing,d -> {d#0,0});
     productRing := kk[Variables=>ny+nz,
-        Degrees=>join(apply(ny,i->{1,0}),apply(nz,i->{0,1}))];
+        Degrees=>join(sourceDegs,apply(targetWeights,a -> {0,a}))];
     yy := take(flatten entries vars productRing,ny);
     zz := drop(flatten entries vars productRing,ny);
     liftSource := map(productRing,sourcePolynomialRing,yy);
     liftedSourceIdeal := liftSource sourceIdeal;
-    -- Kernel/Rees calculation in a target containing the quotient source.
+    -- Kernel/Rees calculation in a target containing the quotient source.  The
+    -- parameter carries the target weight, so z_i of degree (0,a_i) has an image
+    -- of matching degree.
     target := bb[graphParameter,Degrees=>{{0,1}}];
     sourceVarsInTarget := apply(flatten entries vars sourcePolynomialRing,
         q -> sub(q,bb));
     graphMap := map(target,productRing,
-        join(sourceVarsInTarget,apply(imgs,q -> q*graphParameter)));
+        join(sourceVarsInTarget,
+             apply(nz,i -> imgs#i*graphParameter^(targetWeights#i))));
     graphIdeal := kernel graphMap;
     new HashTable from {
         "productRing" => productRing,
@@ -344,8 +411,16 @@ certifiedHomogeneousGraph = (sourcePolynomialRing,sourceIdeal,hImages) -> (
         "projectionIsomorphismCertified" => true,
         "sourceVariableCount" => ny,
         "targetVariableCount" => nz,
+        "targetWeights" => targetWeights,
         "sourceIdealLift" => liftedSourceIdeal
         }
+    );
+
+-- The unweighted target P^n is the case where every weight is 1, which is also
+-- where the proportionality test reduces to "all coordinate degrees agree".
+certifiedHomogeneousGraph = (sourcePolynomialRing,sourceIdeal,hImages) -> (
+    certifiedWeightedGraph(sourcePolynomialRing,sourceIdeal,hImages,
+        apply(#hImages,i -> 1))
     );
 
 -- Note: candidates are compared after saturation by the biprojective irrelevant ideal.

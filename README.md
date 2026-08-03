@@ -49,6 +49,7 @@ SteinFactorization.m2        reusable implementation
 IMPLEMENTATION.tex           technical note: construction, examples, outputs
 tests/basic.m2               basic and Veronese regression tests
 tests/global-hom.m2          general bigraded global Hom regression tests
+tests/weighted.m2            weighted projective source and target
 tests/mori-fiber-space.m2    P1 x P2 -> P2 example
 tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
@@ -101,6 +102,17 @@ cData = steinCoordinateAlgebra(data, gammaIndex, baseImages)
 gData = directSteinGraph(data, cData)
 ```
 
+`d1,d2,c1,c2` are determined by the degrees of `S`, so they can be left out:
+
+```m2
+data = steinHomDataFromRing(S, IGraph)
+```
+
+`blockDegreeData S` returns the same four numbers on their own.  When they are
+passed explicitly they are checked against `S` rather than trusted, which
+matters under a weighted grading, where `c1,c2` are the weight sums and not the
+variable counts.
+
 For a known or experimental truncation bound:
 
 ```m2
@@ -126,17 +138,19 @@ Implemented:
 - finite `(0,>=0)`-strand presentation over `A` using `pushForward`;
 - coordinate-algebra reconstruction via Lemma 5.2;
 - direct graph closure through localization and a weighted Rees parameter;
-- regression examples with finite, fiber-type, and divisorial contractions.
+- regression examples with finite, fiber-type, and divisorial contractions;
+- weighted projective input, in `tests/weighted.m2`. Only the split into a
+  source block of degrees `(positive,0)` and a target block of degrees
+  `(0,positive)` is structural; the degrees within a block need not be 1.
+  `certifiedWeightedGraph` builds a graph whose target is a weighted
+  projective space, and `certifiedHomogeneousGraph` is the special case where
+  every target weight is 1.
 
 Not covered:
 
-- only standard bigraded input is tested. The paper allows weighted
-  projective spaces and the construction reads degrees from the ring, but no
-  weighted example has been run, and `certifiedHomogeneousGraph` assumes an
-  unweighted target;
-- `d1,d2,c1,c2` are trusted as given. Note `c1,c2` are the *sums of the
-  degrees* of the variables in each block (equal to the variable counts only
-  in the standard graded case).
+- the weighted examples that have been run are small: an isomorphism and a
+  degree-two map out of `P(1,2)`. Nothing of the size of the blow-up examples
+  has been tried with a weighted grading.
 
 Current performance issue:
 

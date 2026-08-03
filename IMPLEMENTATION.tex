@@ -126,15 +126,23 @@ Here \texttt{d1}, \texttt{d2} are the dimensions of the ambient
 (weighted) projective spaces of the source and target blocks --- that
 is, block \(s\) has variables \(x_{s,0},\dots,x_{s,d_s}\) --- and
 \texttt{c1}, \texttt{c2} are the sums \(c_s=\sum_{t=0}^{d_s}c_{s,t}\) of
-the degrees of those variables, as in Proposition 4.2. All examples here
-are standard bigraded, where \(c_s\) is simply the number of variables
-in the block; for a weighted grading the weight sum must be supplied
-instead. The arguments are not checked against the degrees of the
-ambient ring, so a wrong value silently produces a wrong bound. Nothing
-in the main construction is specialized to the unweighted case ---
-degrees are read from the ring throughout --- but no weighted example
-has been run, so weighted input is untested rather than supported. The
-first function computes the truncated Hom module and records the bound.
+the degrees of those variables, as in Proposition 4.2. In the standard
+bigraded case \(c_s\) is simply the number of variables in the block;
+under a weighted grading it is the larger weight sum. All four numbers
+are determined by the degrees of the ambient ring, so they can be left
+off --- \texttt{steinHomDataFromRing(S, graphIdeal)} reads them off ---
+and when they are supplied they are checked against the ring rather than
+trusted.
+
+What the construction requires is only that the variables split into a
+source block of degrees \((\ast,0)\) and a target block of degrees
+\((0,\ast)\): that split is what lets the first degree see the source
+direction alone, so that the \((0,\geq0)\)-strand means what it does.
+The degrees within a block need not be \(1\), and weighted projective
+spaces are allowed, as in the paper. The examples of Section
+\ref{sec:examples} are all standard bigraded, but
+\texttt{tests/weighted.m2} runs the same construction over \(\PP(1,2)\).
+The first function computes the truncated Hom module and records the bound.
 The second evaluates selected Hom generators at a nonzero element
 \(\gamma\) and computes the defining relations of the resulting
 coordinate algebra. The third computes a graph closure from the
@@ -391,14 +399,9 @@ package. The main limitations are:
   The component-selection part of the full algorithm is not automated
   for every possible input
 \item
-  Only standard bigraded input has been tested. The paper allows
-  weighted projective spaces, and the main construction reads degrees
-  from the ring rather than assuming weight one, but no weighted example
-  has been run; \texttt{certifiedHomogeneousGraph} moreover assumes an
-  unweighted target
-\item
-  The bound arguments \texttt{d1,d2,c1,c2} are trusted, not validated
-  against the ambient ring, although they are determined by it
+  The weighted examples that have been run are small --- an isomorphism
+  and a degree-two map out of \(\PP(1,2)\). Nothing on the scale of the
+  blow-up examples has been tried with a weighted grading
 \end{itemize}
 
 The calculations should therefore be read as reproducible computational
