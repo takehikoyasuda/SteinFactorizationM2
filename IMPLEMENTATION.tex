@@ -50,7 +50,7 @@
 We implement a prototype of a Stein factorization algorithm in Macaulay2
 and test it on several explicit projective maps. The implementation
 follows the bigraded Hom-module construction in the author's algorithm:
-\[C=\Hom_R(R_{\geq r},R)_{(0,\geq 0)}\]
+\[C=\Hom_R(R_{\geq\mathbf{r}},R)_{(0,\geq 0)}\]
 The module is used to reconstruct a graded coordinate algebra for the
 Stein intermediate scheme and, where possible, the graph of the
 connected-fiber morphism. This note is not intended as a formal
@@ -88,9 +88,9 @@ during the Hom-module computation.
 
 \section{The computational construction}\label{sec:construction}
 
-For a sufficiently large bidegree \(r=(r_1,r_2)\), the implementation
+For a sufficiently large bidegree \(\mathbf{r}=(r_1,r_2)\), the implementation
 computes
-\[C=\Hom_R(R_{\geq r},R)_{(0,\geq0)}.\]
+\[C=\Hom_R(R_{\geq\mathbf{r}},R)_{(0,\geq0)}.\]
 The truncation bound is obtained from shifts in a bounded bigraded free
 resolution of \(R\) over the ambient polynomial ring. This is the
 computational counterpart of the bound in Corollary 4.3 of
@@ -98,7 +98,7 @@ computational counterpart of the bound in Corollary 4.3 of
 the monograded global extension module computation of
 \hyperref[sec:references]{Smith (2000)} to the bigraded setting.
 
-For \(r\) large enough, \(\Hom_R(R_{\geq r},R)\) computes the
+For \(\mathbf{r}\) large enough, \(\Hom_R(R_{\geq\mathbf{r}},R)\) computes the
 sections of the structure sheaf of \(\Gamma_f\cong Y\), so its
 \((0,n)\)-part is
 \[H^0(Y,f^*\sO_X(n))=H^0(X,f_*\sO_Y\otimes\sO_X(n))=H^0(Z,g^*\sO_X(n)).\]
@@ -304,7 +304,7 @@ as a heavier benchmark. Here the source sits in \(\PP^{11}\), so the
 automatic Corollary 4.3 bound would require a minimal free resolution
 out to homological degree \(11+3+1\); that computation did not finish
 within about ten minutes on the machine used here and was aborted. The
-test therefore supplies \(r=(2,0)\) and records that this bound is
+test therefore supplies \(\mathbf{r}=(2,0)\) and records that this bound is
 experimental; with the supplied bound the example runs in about 11
 seconds.
 
