@@ -31,6 +31,7 @@ assert(hilbertFunction(2,c#"ring") == 15);
 assert(isPrime jc);
 
 gh = directSteinGraph(d,c);
+assert(isHomogeneous(gh#"graphIdeal"));
 assert(isPrime(gh#"graphIdeal"));
 
 -- Fiber over [1:1:1].  On x2=1, x0^2=x1^2=1, while [s:t] is free.

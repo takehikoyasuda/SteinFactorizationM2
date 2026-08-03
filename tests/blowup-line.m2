@@ -37,6 +37,7 @@ assert(hilbertFunction(2,c#"ring") == 35);
 assert(isPrime jc);
 
 gh = directSteinGraph(d,c);
+assert(isHomogeneous(gh#"graphIdeal"));
 assert(isPrime(gh#"graphIdeal"));
 
 -- Independently verify the exceptional divisor of h.

@@ -305,15 +305,15 @@ directSteinGraph = (data,coordinateData) -> (
     adegs := degrees ambient;
     zweights := apply(degrees pp,d -> d#0);
     kk := coefficientRing ambient;
-    -- The Rees parameter records the independent projective scaling of Z.
-    -- For the kernel computation we retain the inherited Z^2 degree; Z weights
-    -- are encoded by powers of the parameter.
+    -- The i-th generator of the coordinate algebra is a section of degree
+    -- (0,zweights#i), so that is the bidegree its variable carries here.  Do not
+    -- read the degree off cimages#i instead: those live in the tower ring
+    -- rr[steinInverse], which forgets the grading of its coefficient ring rr and
+    -- reports (0,0) for a target coordinate and (-deg gamma) for an evaluated
+    -- generator.  With those degrees the graph ideal is not even homogeneous.
     jointDegrees := join(
         adegs,
-        apply(toList(0..nz-1),i -> (
-            di := degree(cimages#i);
-            {di#0,di#1}
-            ))
+        apply(zweights,b -> {0,b})
         );
     joint := kk[Variables=>na+nz,Degrees=>jointDegrees];
     target0 := ll[steinGraphParameter,Degrees=>{{0,0}}];

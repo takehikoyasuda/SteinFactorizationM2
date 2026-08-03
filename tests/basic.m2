@@ -19,6 +19,14 @@ assert(numgens(csqGeneral#"definingIdeal") == 1);
 gsqDirect = directSteinGraph(dsq,csqGeneral);
 assert(gsqDirect#"saturationByLocalization");
 assert(isPrime(gsqDirect#"graphIdeal"));
+-- The graph sits in a product, so its ideal has to be bihomogeneous.  It is
+-- only so if the variables for the coordinate algebra are given the bidegrees
+-- (0,b_i) of the sections they stand for; reading those degrees off the
+-- localization instead loses the grading of its coefficient ring and makes the
+-- ideal inhomogeneous.
+assert(isHomogeneous(gsqDirect#"graphIdeal"));
+assert(drop(degrees(gsqDirect#"jointRing"),gsqDirect#"ambientVariableCount")
+    == apply(degrees(csqGeneral#"polynomialRing"),e -> {0,e#0}));
 
 rsq = dsq#"ring";
 esq = evaluateSteinGenerators(dsq,0);
