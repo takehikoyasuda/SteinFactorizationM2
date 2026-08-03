@@ -37,13 +37,16 @@ jobs:
       - uses: actions/checkout@v4
 
       # amsart, booktabs, microtype, geometry, xcolor, hyperref and fancyvrb
-      # come from these four; lmodern supplies the T1 fonts.
+      # come from the texlive packages.  cm-super is what supplies Computer
+      # Modern as scalable Type 1 fonts in the T1 encoding the note asks for;
+      # without it pdftex falls back to bitmap fonts and microtype's font
+      # expansion aborts the build.
       - name: Install TeX Live
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             texlive-latex-recommended texlive-latex-extra \
-            texlive-fonts-recommended lmodern
+            texlive-fonts-recommended cm-super lmodern
 
       - name: Build
         run: make
