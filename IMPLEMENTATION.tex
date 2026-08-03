@@ -17,15 +17,10 @@
 \usepackage{fancyvrb}
 \fvset{fontsize=\small,xleftmargin=1em}
 
-% pandoc emits \tightlist for lists without blank lines between items.
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-
 % Long \texttt identifiers cannot hyphenate; give the paragraph builder room.
 \setlength{\emergencystretch}{3em}
 
-% Notation.  These are the commands GitHub's markdown renderer refuses, which is
-% why the markdown version of this note had to spell them with Unicode letters.
+% Notation.
 \newcommand{\PP}{\ensuremath{\mathbb{P}}}
 \newcommand{\QQ}{\ensuremath{\mathbb{Q}}}
 \newcommand{\RR}{\ensuremath{\mathbb{R}}}
@@ -54,11 +49,8 @@
 \begin{abstract}
 We implement a prototype of a Stein factorization algorithm in Macaulay2
 and test it on several explicit projective maps. The implementation
-follows the bigraded Hom-module construction in the
-author\textquotesingle s algorithm:
-
+follows the bigraded Hom-module construction in the author's algorithm:
 \[C=\Hom_R(R_{\geq r},R)_{(0,\geq 0)}\]
-
 The module is used to reconstruct a graded coordinate algebra for the
 Stein intermediate scheme and, where possible, the graph of the
 connected-fiber morphism. This note is not intended as a formal
@@ -67,23 +59,18 @@ computational experiment that demonstrates the practical feasibility of
 the construction on concrete examples. All calculations are included in
 the repository and can be reproduced with Macaulay2 1.24.11 or later.
 The code and this note were written essentially by an AI system, with
-minor edits by the author; see
-\hyperref[use-of-ai-in-the-implementation]{Use of AI}.
+minor edits by the author; see \hyperref[sec:ai]{Use of AI}.
 \end{abstract}
 
 \maketitle
 
 
-\section{Purpose and background}\label{purpose-and-background}
+\section{Purpose and background}\label{sec:background}
 
 For a projective morphism of algebraic varieties
-
 \[f:Y\longrightarrow X,\]
-
 a Stein factorization is a decomposition
-
 \[Y\xrightarrow{h} Z\xrightarrow{g} X\]
-
 in which \(h\) is proper with \(h_*\sO_Y=\sO_Z\) (so that \(h\) has
 connected fibers) and \(g\) is finite; concretely
 \(Z=\Spec_X f_*\sO_Y\). The purpose of this project is to turn an
@@ -93,34 +80,29 @@ geometry.
 
 The input is the graph of \(f\) represented as a bigraded projective
 scheme. If
-
 \[R=S/I_{\Gamma_f},\]
-
 then the variables in the source block have degree \((1,0)\) and those
 in the target block have degree \((0,1)\). The two gradings make it
 possible to separate the source direction from the target direction
 during the Hom-module computation.
 
-\section{The computational
-construction}\label{the-computational-construction}
+\section{The computational construction}\label{sec:construction}
 
 For a sufficiently large bidegree \(r=(r_1,r_2)\), the implementation
 computes
-
 \[C=\Hom_R(R_{\geq r},R)_{(0,\geq0)}.\]
-
 The truncation bound is obtained from shifts in a bounded bigraded free
 resolution of \(R\) over the ambient polynomial ring. This is the
 computational counterpart of the bound in Corollary 4.3 of
-\hyperref[references]{Yasuda (2026)}. The bigraded construction extends
+\hyperref[sec:references]{Yasuda (2026)}. The bigraded construction extends
 the monograded global extension module computation of
-\hyperref[references]{Smith (2000)} to the bigraded setting.
+\hyperref[sec:references]{Smith (2000)} to the bigraded setting.
 
 For \(r\) large enough, \(\Hom_R(R_{\geq r},R)\) computes the
 sections of the structure sheaf of \(\Gamma_f\cong Y\), so its
 \((0,n)\)-part is
-\[H^0(Y,f^*\sO_X(n))=H^0(X,f_*\sO_Y\otimes\sO_X(n))=H^0(Z,g^*\sO_X(n)).\] That
-is, the \((0,\geq0)\)-strand is the section ring of the Stein
+\[H^0(Y,f^*\sO_X(n))=H^0(X,f_*\sO_Y\otimes\sO_X(n))=H^0(Z,g^*\sO_X(n)).\]
+That is, the \((0,\geq0)\)-strand is the section ring of the Stein
 intermediate \(Z\) with respect to \(g^*\sO_X(1)\). This is why the
 examples below produce Veronese section rings rather than the usual
 homogeneous coordinate rings: the polarization on \(Z\) is pulled back
@@ -155,8 +137,7 @@ resolution is too expensive, the experimental entry point
 \texttt{steinHomDataAtBound} accepts a supplied bound. Such a
 computation is explicitly marked as non-certified in the output.
 
-\section{Environment and
-reproducibility}\label{environment-and-reproducibility}
+\section{Environment and reproducibility}\label{sec:reproducibility}
 
 The computations were run with Macaulay2 1.24.11 on macOS (Apple
 Silicon, 2023). The relevant bundled packages include
@@ -185,11 +166,10 @@ below are chosen to show the mathematical input and the checks, without
 reproducing every elimination polynomial or the full Macaulay2 startup
 log.
 
-\section{Representative Macaulay2
-calculations}\label{representative-macaulay2-calculations}
+\section{Representative Macaulay2 calculations}\label{sec:examples}
 
-\subsection{\texorpdfstring{A quadratic map of
-\(\PP^1\)}{A quadratic map of \PP{}\^{}1}}\label{a-quadratic-map-of-ux21191}
+\subsection{\texorpdfstring{A quadratic map of \(\PP^1\)}%
+                           {A quadratic map of P1}}\label{sec:quadratic}
 
 The first test is the finite map \([s:t]\mapsto[s^2:t^2]\). Its graph is
 described by \(y_0^2x_1-y_1^2x_0\). The following excerpt shows the
@@ -222,16 +202,13 @@ rebuilding the map into an explicitly named ring --- the relation is
 
 Thus the Stein intermediate is the source \(\PP^1\), embedded as the conic
 \(X_0X_1-z^2=0\): since \(f\) is finite, \(Z\cong Y=\PP^1\), polarized by
-\(f^*\sO{}(1)=\sO{}(2)\), whose section ring is the second Veronese ring of
+\(f^*\sO(1)=\sO(2)\), whose section ring is the second Veronese ring of
 \(\PP^1\).
 
-\subsection{A Mori fiber space with a finite
-part}\label{a-mori-fiber-space-with-a-finite-part}
+\subsection{A Mori fiber space with a finite part}\label{sec:mori}
 
 The next example is the composition
-
 \[\PP^1 \times \PP^2 \to \PP^2 \to \PP^2,\]
-
 where the second map is \([x_0:x_1:x_2] \mapsto [x_0^2:x_1^2:x_2^2]\).
 The projection has connected \(\PP^1\)-fibers, while the second map is
 finite. The relevant part of the test input and output is:
@@ -265,7 +242,7 @@ Each of the four fiber components is a copy of \(\PP^1\). The computed
 Stein intermediate is the degree-two Veronese model of \(\PP^2\), and the
 connected part is the projection to \(\PP^2\).
 
-Here \(Z=\PP^2\) carries the polarization \(g^*\sO{}(1)=\sO{}(2)\), so its section
+Here \(Z=\PP^2\) carries the polarization \(g^*\sO(1)=\sO(2)\), so its section
 ring is the second Veronese ring of \(\PP^2\), i.e. the subring of
 \(k[x_0,x_1,x_2]\) generated by the degree-2 monomials. Its Hilbert
 function is \(H(1)=6\) (the 6 monomials of degree 2 in 3 variables) and
@@ -273,8 +250,8 @@ function is \(H(1)=6\) (the 6 monomials of degree 2 in 3 variables) and
 computation reproduces these known invariants, which is what one expects
 if the algorithm identifies the Stein intermediate correctly.
 
-\subsection{\texorpdfstring{The blow-up of a line in
-\(\PP^3\)}{The blow-up of a line in \PP{}\^{}3}}\label{the-blow-up-of-a-line-in-ux21193}
+\subsection{\texorpdfstring{The blow-up of a line in \(\PP^3\)}%
+                           {The blow-up of a line in P3}}\label{sec:blowup-line}
 
 We next take the blow-down \(\Bl_L(\PP^3)\to\PP^3\) along a line
 \(L\), followed by the coordinatewise square map on \(\PP^3\). The main
@@ -305,7 +282,7 @@ o = (8, true)
 \end{verbatim}
 
 The Stein ring has the Hilbert values of the second Veronese ring of
-\(\PP^3\), as expected for \(Z=\PP^3\) with \(g^*\sO{}(1)=\sO{}(2)\): \(H(1)=10\)
+\(\PP^3\), as expected for \(Z=\PP^3\) with \(g^*\sO(1)=\sO(2)\): \(H(1)=10\)
 (the 10 monomials of degree 2 in 4 variables) and \(H(2)=35\) (the 35
 monomials of degree 4 in 4 variables). The computation recovers both
 values. Note that the presentation produced by the algorithm uses 11
@@ -314,15 +291,12 @@ algebra generator; the quotient ring is nevertheless the expected one.
 
 The exceptional divisor of \(\Bl_L(\PP^3) \to \PP^3\) over a line
 \(L\) is the projective bundle
-
-\[\PP{}(N_{L/\PP^3}) = \PP{}(\sO{}(1)^{\oplus 2}) \cong \PP^1 \times \PP^1.\]
-
+\[\PP(N_{L/\PP^3}) = \PP(\sO(1)^{\oplus 2}) \cong \PP^1 \times \PP^1.\]
 The computation returns a surface of degree 2, in agreement with the
 Segre quadric; the check is carried out on the source side,
 independently of the Hom construction.
 
-\subsection{The twisted-cubic
-blow-up}\label{the-twisted-cubic-blow-up}
+\subsection{The twisted-cubic blow-up}\label{sec:twisted-cubic}
 
 The final example is the blow-up of \(\PP^3\) along the twisted cubic,
 followed by the coordinatewise square map. It is deliberately retained
@@ -360,7 +334,7 @@ so automatic graph construction is not yet completed for this example.
 This is a useful illustration of the difference between a bound that
 happens to work and a bound certified by Corollary 4.3.
 
-\section{Summary of results}\label{summary-of-results}
+\section{Summary of results}\label{sec:summary}
 
 In the table below, \(\dim\) is the Krull dimension of the computed
 Stein coordinate ring, i.e. \(\dim Z+1\) (the ring is the section ring,
@@ -394,13 +368,12 @@ the corresponding geometry. This is evidence that the implementation
 behaves as intended on these inputs; it is neither a proof of the
 algorithm nor a statement about inputs of a different shape.
 
-\section{Limitations}\label{limitations}
+\section{Limitations}\label{sec:limitations}
 
 This is a research prototype rather than a general-purpose Macaulay2
 package. The main limitations are:
 
 \begin{itemize}
-\tightlist
 \item
   Deep minimal free resolutions can dominate the exact-bound computation
 \item
@@ -426,8 +399,7 @@ The calculations should therefore be read as reproducible computational
 evidence, not as a replacement for the mathematical hypotheses or proofs
 in the source paper.
 
-\section{Use of AI in the
-implementation}\label{use-of-ai-in-the-implementation}
+\section{Use of AI in the implementation}\label{sec:ai}
 
 The Macaulay2 code, the test files, and this note were written
 essentially by an AI system (Claude); the author only made minor edits.
@@ -436,7 +408,7 @@ correct, but has not verified every line, every intermediate
 computation, or every claim in detail. Readers should keep this in mind.
 
 Two points nevertheless make large errors unlikely. First, the algorithm
-being implemented is the one described in \hyperref[references]{Yasuda
+being implemented is the one described in \hyperref[sec:references]{Yasuda
 (2026)}; nothing conceptually difficult is being attempted here, so the
 room for the code to silently do something else is limited. Second, the
 tests do not merely report what the code computes: each example is
@@ -450,7 +422,7 @@ invariants by accident.
 None of this replaces a proof, and computations marked as non-certified
 are not presented as proofs.
 
-\section{Conclusion}\label{conclusion}
+\section{Conclusion}\label{sec:conclusion}
 
 This project shows that the bigraded Hom-module construction can be used
 in a practical Macaulay2 workflow on several nontrivial examples. The
@@ -461,7 +433,7 @@ repository is therefore intended as a public technical note and
 reproducible experiment rather than as a claim of a fully general
 implementation.
 
-\section{References}\label{references}
+\section{References}\label{sec:references}
 
 \begin{itemize}
 \item
@@ -471,13 +443,13 @@ implementation.
   bigraded extension.)
 \item
   \textbf{Stacks Project Authors.} Stein factorization.\\
-  \url{https://stacks.math.columbia.edu/}\strut \\
+  \url{https://stacks.math.columbia.edu/}\\
   (Definition and basic properties of Stein factorization in scheme
   theory.)
 \item
   \textbf{Yasuda, T.} (2026). An algorithm for the minimal model program
   in dimension three. arXiv:2603.13703v2.\\
-  \url{https://arxiv.org/abs/2603.13703v2}\strut \\
+  \url{https://arxiv.org/abs/2603.13703v2}\\
   (Sections 4--5 and Algorithm 1; this repository implements Section
   5.1.)
 \item
