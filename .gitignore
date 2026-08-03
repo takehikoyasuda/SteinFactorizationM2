@@ -6,3 +6,8 @@
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+
+# The built note.  A PDF is already compressed, so git cannot delta it and each
+# revision would cost a full copy in the history.  CI builds it from the tex and
+# publishes it to GitHub Pages instead.
+IMPLEMENTATION.pdf

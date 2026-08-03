@@ -46,7 +46,7 @@ M2 --no-readline --stop -q tests/blowup-twisted-cubic.m2
 
 ```text
 SteinFactorization.m2        reusable implementation
-IMPLEMENTATION.tex/.pdf      technical note: construction, examples, outputs
+IMPLEMENTATION.tex           technical note: construction, examples, outputs
 tests/basic.m2               basic and Veronese regression tests
 tests/global-hom.m2          general bigraded global Hom regression tests
 tests/mori-fiber-space.m2    P1 x P2 -> P2 example
@@ -54,23 +54,29 @@ tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
 ```
 
-The technical note [IMPLEMENTATION.pdf](IMPLEMENTATION.pdf) describes the
-construction, the worked examples, and the actual Macaulay2 output.  It is
-written in LaTeX rather than markdown because GitHub's markdown renderer refuses
-`\newcommand`, `\operatorname`, `\mathbb`, `\mathcal` and `\tag`, and eats the
-backslash in `\,` and `\\`, which between them rule out macros, multi-line
-formulas and equation numbers.  Rebuild it with
+The technical note describes the construction, the worked examples, and the
+actual Macaulay2 output.  Read the current build at
+
+**<https://takehikoyasuda.github.io/SteinFactorizationM2/IMPLEMENTATION.pdf>**
+
+It is written in LaTeX rather than markdown because GitHub's markdown renderer
+refuses `\newcommand`, `\operatorname`, `\mathbb`, `\mathcal` and `\tag`, and
+eats the backslash in `\,` and `\\`, which between them rule out macros,
+multi-line formulas and equation numbers.
+
+The PDF is not tracked in git -- a PDF is already compressed, so git cannot
+delta it and every revision of the note would cost a full copy in the history.
+CI rebuilds it from `IMPLEMENTATION.tex` on each push and publishes it at the
+address above.  To build it locally:
 
 ```sh
 make
 ```
 
-The Makefile pins `SOURCE_DATE_EPOCH`, so pdflatex does not stamp the build time
-into the file and rebuilding an unedited source leaves the PDF byte-identical --
-without it every rebuild would show up as a git change, and since a PDF is
-already compressed, git cannot delta it and each such non-change would cost a
-full copy in the history.  Bump the date in the Makefile when the note is
-substantively revised.
+The Makefile pins `SOURCE_DATE_EPOCH` so that pdflatex does not stamp the build
+time into the file, which makes the build reproducible: identical input gives a
+byte-identical PDF.  Bump the date in the Makefile when the note is
+substantively revised; it is what the PDF reports as its creation date.
 
 ## Main M2 functions
 
