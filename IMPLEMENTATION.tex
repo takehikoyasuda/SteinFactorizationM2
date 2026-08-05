@@ -235,26 +235,27 @@ elements \(c_0,\dots,c_N\) of \(C\), homogeneous of bidegrees
 % realized concretely inside \(R[1/\gamma]\), which is where the
 % computation runs.
 
-Give \(Z\) a homogeneous coordinate \(z_i\) for each \(c_i\), of bidegree
-\((0,b_i)\), and form
-\[J=k[\,\text{variables of }S,\ z_0,\dots,z_N\,]\longrightarrow
-R[1/\gamma][t],\qquad
-x\longmapsto \bar x,\quad z_i\longmapsto c_i\,t^{b_i}.\]
+Each \(c_i\) becomes a homogeneous coordinate \(z_i\) on \(Z\), carrying
+the bidegree of the \(c_i\) it stands for:
+\[J=S[z_0,\dots,z_N],\qquad \deg z_i=(0,b_i).\]
+The map to take the kernel of is
+\[\Phi\colon J\longrightarrow R[1/\gamma][t],\qquad
+\Phi(x)=\bar x\quad(x\text{ a variable of }S),\qquad
+\Phi(z_i)=c_i\,t^{b_i}.\]
 Each variable \(x\) of \(S\) goes to its class \(\bar x\) in
 \(R=S/I_{\Gamma_f}\), taken inside \(R[1/\gamma]\); that is all the first
-half of the map does. The graph of \(h\colon Y\to Z\) is the kernel, a
+half of the map does. The graph of \(h\colon Y\to Z\) is \(\ker\Phi\), a
 bihomogeneous ideal of \(J\), and \(J\) is the coordinate ring of the
 product of the two spaces containing \(\Gamma_f\) with the weighted
 projective space in which the \(z_i\) place \(Z\). It is weighted exactly
 when the \(b_i\) are not all equal.
 
 The parameter \(t\) is what forces the answer to be a projective one.
-Writing \(F=\sum_\alpha F_\alpha z^\alpha\) with \(F_\alpha\) in the
-variables of \(S\),
-\[F\longmapsto\sum_\alpha
-F_\alpha\,c^\alpha\,t^{\langle b,\alpha\rangle},\]
+Writing \(F=\sum_\alpha F_\alpha z^\alpha\) with \(F_\alpha\in S\),
+\[\Phi(F)=\sum_\alpha
+\bar F_\alpha\,c^\alpha\,t^{\langle b,\alpha\rangle},\]
 and since \(t\) is a free variable this vanishes if and only if
-\(\sum F_\alpha c^\alpha=0\) separately for each value of
+\(\sum \bar F_\alpha c^\alpha=0\) separately for each value of
 \(\langle b,\alpha\rangle=\sum_i b_i\alpha_i\). So \(t\) admits only those
 relations that are homogeneous in the \(z\)-degree, which are the ones
 that survive the scaling
