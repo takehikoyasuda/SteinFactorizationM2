@@ -11,3 +11,8 @@
 # revision would cost a full copy in the history.  CI builds it from the tex and
 # publishes it to GitHub Pages instead.
 IMPLEMENTATION.pdf
+
+# The package documentation, as `make docs` builds it.  Generated from the doc
+# block in SteinFactorization.m2, and holding the cached example output beside
+# it, so there is nothing here that the source does not already say.
+doc-build/
