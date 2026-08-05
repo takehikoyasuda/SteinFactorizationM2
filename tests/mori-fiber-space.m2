@@ -1,4 +1,4 @@
-load "SteinFactorization.m2";
+needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
 -- X=P^1_[s:t] x P^2_x --h--> P^2_x --g--> P^2_y,
 -- g([x0:x1:x2])=[x0^2:x1^2:x2^2].

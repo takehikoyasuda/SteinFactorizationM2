@@ -1,4 +1,4 @@
-load "SteinFactorization.m2";
+needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
 -- Test 1: identity P^1 -> P^1.
 s1 = QQ[y0,y1,x0,x1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];

@@ -1,4 +1,4 @@
-load "SteinFactorization.m2";
+needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
 -- Blow up the twisted cubic C in P^3, then compose the blow-down with
 -- [x0:x1:x2:x3] |-> [x0^2:x1^2:x2^2:x3^2].

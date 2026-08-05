@@ -1,4 +1,4 @@
-load "SteinFactorization.m2";
+needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
 -- Weighted bigraded input.  Only the split into a source block of degrees
 -- (positive,0) and a target block of degrees (0,positive) is structural; the

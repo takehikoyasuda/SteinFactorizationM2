@@ -1,4 +1,4 @@
-load "SteinFactorization.m2";
+needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
 -- Proposition 4.2 / Corollary 4.3 for the diagonal in P1 x P1.
 -- The S-module N_S is a presentation of the R-module N after restriction

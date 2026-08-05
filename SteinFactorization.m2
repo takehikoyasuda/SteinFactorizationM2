@@ -1,4 +1,29 @@
-needsPackage "Truncations";
+newPackage(
+    "SteinFactorization",
+    Version => "0.1",
+    Date => "5 August 2026",
+    Headline => "Stein factorization of a projective morphism given by its graph",
+    Authors => {{ Name => "Takehiko Yasuda", Email => "yasuda.takehiko.sci@osaka-u.ac.jp" }},
+    Keywords => { "Algebraic Geometry" },
+    PackageExports => { "Truncations", "Saturation", "MinimalPrimes" },
+    AuxiliaryFiles => false
+    )
+
+export {
+    "blockDegreeData",
+    "bigradedGlobalHomData",
+    "steinHomData",
+    "steinHomDataAtBound",
+    "evaluateSteinGenerators",
+    "steinCoordinateAlgebra",
+    "steinDataByStabilization",
+    "directSteinGraph",
+    "certifiedWeightedGraph",
+    "certifiedHomogeneousGraph",
+    "selectCertifiedGraphComponent",
+    "certifyChartwiseProjectionIsomorphism"
+    }
+
 
 -- Core implementation of Section 5.1 of Yasuda, arXiv:2603.13703v2
 -- (https://arxiv.org/abs/2603.13703v2).
@@ -192,13 +217,19 @@ steinCoordinateAlgebra = (homData,gammaIndex,baseImages) -> (
     extra := select(wanted,i -> (degrees hh)#i != {0,0});
     gamma := (gens tt)_(0,gammaIndex);
     dg := degree gamma;
-    ll0 := rr[steinInverse,Degrees=>{{-dg#0,-dg#1}}];
-    ll := ll0/ideal(steinInverse*sub(gamma,ll0)-1);
+    -- getSymbol rather than a bare name: inside a package a bare name would be
+    -- an unexported symbol of the package, which a ring may not adopt as a
+    -- variable.  The variable is then taken from the ring rather than read back
+    -- off the symbol.
+    ll0 := rr[getSymbol "steinInverse",Degrees=>{{-dg#0,-dg#1}}];
+    inv0 := ll0_0;
+    ll := ll0/ideal(inv0*sub(gamma,ll0)-1);
+    inv := sub(inv0,ll);
     ee := homData#"evaluationMatrix";
     evals := apply(extra,i -> ee_(gammaIndex,i));
     images := join(
         apply(baseImages,q -> sub(q,ll)),
-        apply(evals,q -> sub(q,ll)*steinInverse)
+        apply(evals,q -> sub(q,ll)*inv)
         );
     weights := join(
         apply(baseImages,q -> {(degree q)#1}),
@@ -316,10 +347,11 @@ directSteinGraph = (homData,algebraData) -> (
         apply(zweights,b -> {0,b})
         );
     joint := kk[Variables=>na+nz,Degrees=>jointDegrees];
-    target0 := ll[steinGraphParameter,Degrees=>{{0,0}}];
+    target0 := ll[getSymbol "steinGraphParameter",Degrees=>{{0,0}}];
+    tpar := target0_0;
     ambientImages := apply(avars,q -> sub(sub(q,rr),ll));
     zimages := apply(toList(0..nz-1),i ->
-        sub(cimages#i,target0)*steinGraphParameter^(zweights#i));
+        sub(cimages#i,target0)*tpar^(zweights#i));
     graphMap := map(target0,joint,join(ambientImages,zimages));
     graphIdeal := kernel graphMap;
     new HashTable from {
@@ -379,12 +411,13 @@ certifiedWeightedGraph = (sourcePolynomialRing,sourceIdeal,hImages,targetWeights
     -- Kernel/Rees calculation in a target containing the quotient source.  The
     -- parameter carries the target weight, so z_i of degree (0,a_i) has an image
     -- of matching degree.
-    target := bb[graphParameter,Degrees=>{{0,1}}];
+    target := bb[getSymbol "graphParameter",Degrees=>{{0,1}}];
+    gpar := target_0;
     sourceVarsInTarget := apply(flatten entries vars sourcePolynomialRing,
         q -> sub(q,bb));
     graphMap := map(target,productRing,
         join(sourceVarsInTarget,
-             apply(nz,i -> imgs#i*graphParameter^(targetWeights#i))));
+             apply(nz,i -> imgs#i*gpar^(targetWeights#i))));
     graphIdeal := kernel graphMap;
     new HashTable from {
         "productRing" => productRing,
@@ -447,3 +480,86 @@ certifyChartwiseProjectionIsomorphism = (sourceRing,coverElements,chartMapPairs)
         "numberOfCharts" => #chartMapPairs
         }
     );
+
+beginDocumentation()
+
+doc ///
+Node
+  Key
+    SteinFactorization
+  Headline
+    Stein factorization of a projective morphism given by its graph
+  Description
+    Text
+      For a projective morphism of algebraic varieties $f\colon Y \to X$, a
+      {\em Stein factorization} is a decomposition
+      $$Y \xrightarrow{\ h\ } Z \xrightarrow{\ g\ } X$$
+      in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (so that $h$
+      has connected fibers) and $g$ is finite; concretely
+      $Z=\operatorname{Spec}_X f_*\mathcal{O}_Y$.  This package turns the
+      algorithm of Yasuda (2026), Section 5.1, into an executable prototype.
+
+      The input is the graph of $f$ represented as a bigraded projective
+      scheme.  If $R=S/I_{\Gamma_f}$, then the variables in the source block
+      have degrees $(\ast,0)$ and those in the target block $(0,\ast)$, the
+      starred entries being positive; in the standard case they are $(1,0)$
+      and $(0,1)$, and allowing larger values is what admits weighted
+      projective spaces.
+  Subnodes
+    steinHomData
+
+Node
+  Key
+    steinHomData
+  Headline
+    the truncated bigraded Hom module of a graph
+  Usage
+    homData = steinHomData(S, Igraph)
+  Inputs
+    S:Ring
+      the ambient bigraded polynomial ring, the coordinate ring of the product
+      of the two (weighted) projective spaces in which the graph sits
+    Igraph:Ideal
+      the bihomogeneous ideal $I_{\Gamma_f}\subset S$ cutting the graph out of
+      that product, so that $R=S/I_{\Gamma_f}$
+  Outputs
+    :HashTable
+      carrying the bound $\mathbf{r}$ and whether it is certified, the ring
+      $R$, the truncation $R_{\ge\mathbf{r}}$, the module
+      $\operatorname{Hom}_R(R_{\ge\mathbf{r}},R)_{\ge(0,0)}$ together with the
+      matrix of its generators, and the indices of those generators lying in
+      the $(0,\ge0)$-strand
+  Description
+    Text
+      For a sufficiently large bidegree $\mathbf{r}=(r_1,r_2)$ this computes
+      $$C=\operatorname{Hom}_R(R_{\ge\mathbf{r}},R)_{(0,\ge0)}.$$
+      The truncation bound is obtained from shifts in a bounded bigraded free
+      resolution of $R$ over the ambient polynomial ring.  This is the
+      computational counterpart of the bound in Corollary 4.3 of Yasuda (2026).
+
+      Those two arguments are all that is needed.  Corollary 4.3 is stated in
+      terms of the dimensions $d_s$ of the two ambient projective spaces and
+      the sums $c_s$ of the degrees of the variables in each block, but the
+      degrees of {\tt S} already determine all four, so they are computed
+      rather than passed; see @TO blockDegreeData@.
+    Text
+      The finite square map $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$.  Its
+      graph is cut out by one bihomogeneous equation:
+    Example
+      S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
+      Igraph = ideal(y0^2*x1 - y1^2*x0);
+      homData = steinHomData(S, Igraph);
+    Text
+      The computed bound and the degrees of the generators of the
+      $(0,\ge0)$-strand:
+    Example
+      homData#"bound"
+      homData#"certifiedBound"
+      homData#"steinGeneratorDegrees"
+    Text
+      There are two strand generators: the unit in bidegree $(0,0)$, and one
+      further generator in bidegree $(0,1)$.  That extra generator is what
+      distinguishes the Stein intermediate $Z$ from $X$.
+  SeeAlso
+    blockDegreeData
+///

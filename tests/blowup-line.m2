@@ -1,4 +1,4 @@
-load "SteinFactorization.m2";
+needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
 -- X = Bl_L(P^3), L=V(x0,x1), in its Segre presentation inside P^7.
 -- h:X->P^3 is the blow-down and g:P^3->P^3 squares the coordinates.
