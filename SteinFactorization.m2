@@ -112,7 +112,11 @@ bigradedGlobalHomBound = (sourceResolution,targetAmbientResolution,d1,d2,c1,c2) 
 bigradedGlobalHomData = (ambient,sourceModule,targetModule,targetModuleOverAmbient) -> (
     bd := blockDegreeData ambient;
     (d1,d2,c1,c2) := (bd#0,bd#1,bd#2,bd#3);
-    sourceResolution := res sourceModule;
+    -- sourceLowerShift reads the 0th term and nothing else, so the free cover is
+    -- the whole of what Proposition 4.2 wants from the source side.  Say so with
+    -- LengthLimit: sourceModule lives over a quotient of the ambient ring, where
+    -- a free resolution is in general infinite and M2 declines to guess a length.
+    sourceResolution := res(sourceModule,LengthLimit=>0);
     maxHomologicalDegree := d1+d2+1;
     targetAmbientResolution := res(targetModuleOverAmbient,
         LengthLimit=>maxHomologicalDegree);
@@ -1129,8 +1133,9 @@ Node
       the same target presented over {\tt S} rather than over $R$
   Outputs
     :HashTable
-      carrying the certified bound, the two resolutions it was read off, the
-      truncation $M_{\ge\mathbf{r}}$, and
+      carrying the certified bound, the free cover of {\tt M} and the ambient
+      resolution of {\tt N} that it was read off, the truncation
+      $M_{\ge\mathbf{r}}$, and
       $\operatorname{Hom}_R(M_{\ge\mathbf{r}},N)_{\ge(0,0)}$
   Description
     Text
