@@ -501,7 +501,8 @@ Node
       in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (so that $h$
       has connected fibers) and $g$ is finite; concretely
       $Z=\operatorname{Spec}_X f_*\mathcal{O}_Y$.  This package turns the
-      algorithm of Yasuda (2026), Section 5.1, into an executable prototype.
+      algorithm of @TO2 {"Bibliography", "Yasuda (2026)"}@, Section 5.1, into an
+      executable prototype.
 
       The input is the graph of $f$ represented as a bigraded projective
       scheme.  If $R=S/I_{\Gamma_f}$, then the variables in the source block
@@ -527,6 +528,8 @@ Node
     :Underneath the three steps
       bigradedGlobalHomData
       evaluateSteinGenerators
+    :Where this comes from
+      "Bibliography"
 
 Node
   Key
@@ -555,7 +558,8 @@ Node
       $$C=\operatorname{Hom}_R(R_{\ge\mathbf{r}},R)_{(0,\ge0)}.$$
       The truncation bound is obtained from shifts in a bounded bigraded free
       resolution of $R$ over the ambient polynomial ring.  This is the
-      computational counterpart of the bound in Corollary 4.3 of Yasuda (2026).
+      computational counterpart of the bound in Corollary 4.3 of
+      @TO2 {"Bibliography", "Yasuda (2026)"}@.
 
       Those two arguments are all that is needed.  Corollary 4.3 is stated in
       terms of the dimensions $d_s$ of the two ambient projective spaces and
@@ -749,8 +753,9 @@ Node
       of the variables in each block
   Description
     Text
-      Corollary 4.3 of Yasuda (2026) is stated in terms of four numbers: block
-      $s$ is $x_{s,0},\dots,x_{s,d_s}$, and $c_s=\sum_t \deg(x_{s,t})$.  They
+      Corollary 4.3 of @TO2 {"Bibliography", "Yasuda (2026)"}@ is stated in terms
+      of four numbers: block $s$ is $x_{s,0},\dots,x_{s,d_s}$, and
+      $c_s=\sum_t \deg(x_{s,t})$.  They
       are not arguments to anything public, because the ambient ring already
       determines them; this is the function the entry points call for
       themselves.
@@ -1083,9 +1088,9 @@ Node
   Description
     Text
       The strand $C$ carries no multiplication of its own, being a module of
-      homomorphisms.  Lemma 5.2 of Yasuda (2026) gives it one by realizing it
-      inside a localization: fix a nonzero $\gamma\in R_{\ge\mathbf{r}}$ and
-      send
+      homomorphisms.  Lemma 5.2 of @TO2 {"Bibliography", "Yasuda (2026)"}@ gives
+      it one by realizing it inside a localization: fix a nonzero
+      $\gamma\in R_{\ge\mathbf{r}}$ and send
       $$\varphi\longmapsto\varphi(\gamma)/\gamma\in R[1/\gamma].$$
       $R$ is a domain, $\Gamma_f$ being a variety, so this is injective, and it
       does not depend on which $\gamma$ is taken: for any other
@@ -1139,9 +1144,9 @@ Node
       $\operatorname{Hom}_R(M_{\ge\mathbf{r}},N)_{\ge(0,0)}$
   Description
     Text
-      Proposition 4.2 of Yasuda (2026) is stated for a pair of modules, and
-      this is that statement.  @TO steinHomData@ is the case $M=N=R$, to which
-      the bound formula here specializes.
+      Proposition 4.2 of @TO2 {"Bibliography", "Yasuda (2026)"}@ is stated for a
+      pair of modules, and this is that statement.  @TO steinHomData@ is the
+      case $M=N=R$, to which the bound formula here specializes.
     Text
       The fourth argument is not redundant.  The bound has to be read off a
       free resolution of the target over the ambient polynomial ring {\tt S},
@@ -1168,4 +1173,39 @@ Node
   SeeAlso
     steinHomData
     blockDegreeData
+
+Node
+  Key
+    "Bibliography"
+  Headline
+    the papers this package implements and builds on
+  Description
+    Text
+      Yasuda, T. (2026).  {\em An algorithm for the minimal model program in
+      dimension three}.
+      @HREF{"https://arxiv.org/abs/2603.13703v2","arXiv:2603.13703v2"}@
+
+      The paper this package implements, and the one every numbered result
+      cited in this documentation belongs to.  Section 5.1 is the algorithm.
+      The results the code is organized around are Proposition 4.2, the bound
+      for a pair of modules, which is @TO bigradedGlobalHomData@; Corollary
+      4.3, its specialization to $M=N=R$, which is the bound
+      @TO steinHomData@ computes and whose four numbers
+      @TO blockDegreeData@ reads off the ambient ring; and Lemma 5.2, the
+      evaluation that gives the strand its multiplication, which is
+      @TO evaluateSteinGenerators@.
+    Text
+      Smith, G. G. (2000).  {\em Computing global extension modules}.  Journal
+      of Symbolic Computation {\bf 29}(4), 729--746.
+
+      The monograded computation of global extension modules that the bigraded
+      construction here extends.  What the bigrading buys is the ability to
+      hold one degree at $0$ and let the other run, which is what makes the
+      $(0,\ge0)$-strand --- and with it the section ring of the Stein
+      intermediate --- something one can ask a computer for.
+    Text
+      The Stacks Project Authors.  {\em Stein factorization}.
+      @HREF{"https://stacks.math.columbia.edu/","stacks.math.columbia.edu"}@
+
+      The definition and the basic properties, in the generality of schemes.
 ///
