@@ -655,49 +655,72 @@ Node
     --   extra algebra generators are the evaluated Hom generators, and they are
     --   what distinguishes $Z$ from $X$.
     Text
-      The finite square map $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$ again.
-      Its graph, and the Hom module this function consumes:
+      Take
+      $$f\colon Y=\mathbb{P}^1_{s:t}\times\mathbb{P}^1_{u:v}\
+      \xrightarrow{\ h\ }\ Z=\mathbb{P}^1_{u:v}\ \xrightarrow{\ g\ }\ X,$$
+      with $h$ the second projection and $X$ the conic $x_0x_2=x_1^2$ in
+      $\mathbb{P}^2$, onto which $g$ is two-to-one.  So $f$ is given by the
+      quartics $u^4,u^2v^2,v^4$, and a general fibre of it is two disjoint
+      $\mathbb{P}^1$s, each of which $h$ contracts.  Build the graph, pass it
+      to @TO steinHomData@, and pass what that returns to this function:
     Example
-      S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
-      Igraph = ideal(y0^2*x1 - y1^2*x0);
+      S = QQ[w0,w1,w2,w3,z0,z1,z2,
+          Degrees => {{1,0},{1,0},{1,0},{1,0},{0,1},{0,1},{0,1}}];
+      auxiliaryRing = QQ[s,t,u,v,a,b];
+      Igraph = kernel map(auxiliaryRing, S,
+          {s*u*a, s*v*a, t*u*a, t*v*a, u^4*b, u^2*v^2*b, v^4*b});
       homData = steinHomData(S, Igraph);
-    Text
-      The coordinate algebra comes back under {\tt "ring"} as the quotient it
-      is, the polynomial ring on the algebra generators modulo the relations
-      among them:
-    Example
       algebraData = steinCoordinateAlgebra(homData, 0);
-      describe algebraData#"ring"
+    Text
+    --   Of those, only {\tt S} and {\tt Igraph} are arguments to anything here.
+      {\tt S} is the coordinate ring of $\mathbb{P}^3\times\mathbb{P}^2$, the
+      $\mathbb{P}^3$ being where $Y$ sits by the Segre embedding.  The
+      auxiliary ring is only for writing the graph down: $s,t$ and $u,v$ are
+      the coordinates of the two factors of $Y$, while $a$ and $b$ scale the
+      two blocks separately, which is what makes the kernel bihomogeneous ---
+      the device the parameter $t$ performs in @TO directSteinGraph@.
+    Text
+      The coordinate algebra of $Z$ is the first of these modulo the second:
+    Example
+      algebraData#"polynomialRing"
+      algebraData#"definingIdeal"
     Text
       The polynomial ring is generated automatically, so its variables print
       as $p_0,p_1,\dots$; they come in a fixed order, first the target-block
       variables --- which the function reads off the degrees of {\tt S} ---
       and then one variable for each evaluated Hom generator.  (The strand
       generator of bidegree $(0,0)$ is the unit of $C$ and gets no variable of
-      its own.)  So $p_0,p_1$ are the coordinates $x_0,x_1$ of $X$
-      and $p_2$ is the single evaluated Hom generator, and the relation reads
-      $x_0x_1=p_2^2$: the Stein intermediate is $\mathbb{P}^1$ embedded as a
-      conic.  A finite $f$ leaves nothing for $h$ to contract, so $Z\cong Y$.
+      its own.)  So here $p_0,p_1,p_2$ are the coordinates of $X$ and
+      $p_3,p_4$ are the two evaluated Hom generators.  Those last two are what
+      distinguishes $Z$ from $X$: without them the answer would be the conic
+      itself.
     Text
       The same $C$ is returned a second time as a module over $A$ rather than
       as a ring.  That is the form in which it is finitely generated, and a
       finite presentation over $A$ is what makes $C$ computable at all;
-      @TO pushForward@ produces it.  Here $A$ is the subring of $R$ generated
-      by the coordinates $x_0,x_1$ of $X$, carried on two variables of its
-      own, which print as $p_0,p_1$ again:
+      @TO pushForward@ produces it.
     Example
       algebraData#"baseRing"
       algebraData#"strandAsAModule"
       algebraData#"strandAPresentation"
     Text
-      The presentation is the zero matrix because the module came out free,
-      of rank two on generators of bidegree $(0,0)$ and $(0,1)$.  That is the
-      case in every example in this package, and not by accident: the finite
-      part of the factorization is a coordinatewise power map throughout, and
-      the pushforward of the structure sheaf along such a map splits, leaving
-      $C$ free over $A$.  So what carries the information here is the list of
-      degrees, which is also what the fingerprint in
-      @TO steinDataByStabilization@ compares from one bound to the next.
+      Neither of the two things on show here is guaranteed.  $A$ is the
+      coordinate ring of the conic rather than a polynomial ring, because the
+      target is a proper subvariety of $\mathbb{P}^2$; send $Y$ onto a whole
+      projective space instead and the target coordinates become
+      algebraically independent, so $A$ is free of relations.  And $C$ is not
+      free over $A$: $\mathcal{O}_X(1)$ restricted to a conic is
+      $\mathcal{O}(2)$ on the $\mathbb{P}^1$ underneath it, so $A$ reaches
+      only the monomials of even degree there, while $C_n=k[u,v]_{4n}$
+      contains the odd ones too.  The two of those in degree one, $uv^3$ and
+      $u^3v$, are the extra module generators, and the two columns of the
+      presentation are what they satisfy.  Where the finite part is a
+      coordinatewise power map onto a whole projective space --- which is what
+      most of the examples in this package are --- the module comes out free
+      instead and the presentation is the zero matrix.
+    Text
+      This example is {\tt tests/conic-target.m2}, where the fibres are
+      checked as well.
     Text
       By the independence of the evaluation from the choice of $\gamma$, the
       subring obtained does not depend on {\tt evaluationElementIndex}; only the
