@@ -869,13 +869,27 @@ Node
       same Krull dimension, the same Hilbert values out to {\tt hilbertMax},
       and the same degrees of the strand as an $A$-module.  After
       {\tt requiredMatches} consecutive agreements the search stops.
+    Text
+      Take the finite square map $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$
+      again: start at $(1,0)$, try at most three bounds, and stop after a
+      single agreement.
     Example
       S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
       Igraph = ideal(y0^2*x1 - y1^2*x0);
       stab = steinDataByStabilization(S, Igraph, {1,0}, 3, 1, {x0,x1}, 2);
+    Text
+      Whether it settled, on which bound, and after how many runs:
+    Example
       stab#"stabilized"
       stab#"chosenBound"
       stab#"stepsRun"
+    Text
+      The runs at $(1,0)$ and $(2,0)$ agreed, so the search stopped there.  The
+      bound reported is the last one run, not the earliest that agreed.  Here
+      $(1,0)$ is the bound @TO steinHomData@ certifies for this input, so the
+      heuristic is being checked against an answer that can be had outright;
+      that is the only place it can be checked, since where it is actually
+      wanted the certified bound is out of reach.
     Text
       That the answer stopped moving is evidence and not more than evidence:
       only finitely many bounds were tried, and nothing rules out a later one
