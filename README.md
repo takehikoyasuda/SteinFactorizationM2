@@ -19,7 +19,9 @@ the connected-fiber graph directly from evaluated Hom generators.
 - Macaulay2 1.24.11 or later
 - bundled packages `Truncations`, `MinimalPrimes`, `Saturation`
 
-The current development and tests use `/opt/homebrew/bin/M2` on macOS.
+The current development and tests use Macaulay2 1.26.06 on macOS.  Version
+1.24.11 is the oldest version the package is believed to support; current
+tests and documentation output are checked with 1.26.06.
 
 ## Quick start
 
@@ -84,22 +86,27 @@ substantively revised; it is what the PDF reports as its creation date.
 For arbitrary bigraded (R)-modules (M,N), use:
 
 ```m2
-data = bigradedGlobalHomData(S, M, N, NoverS)
+data = bigradedGlobalHomData(S, M, N, NS)
 ```
 
-Here `NoverS` is the same target module (N), presented as an
+Here `NS` is the same target module (N), presented as an
 `S`-module after restriction along `S -> R`.  The explicit presentation is
 needed because Proposition 4.2 reads the shifts in an `S`-free resolution of
-(N).  The returned `data` contains the certified bound, both resolutions,
-the truncation of (M), and `Hom_R(M_{>=r},N)_{>=(0,0)}`.
+(N).  The returned `data` contains the certified bound, a free cover of (M),
+a bounded ambient resolution of (N), the truncation of (M), and
+`Hom_R(M_{>=r},N)_{>=(0,0)}`.
 
 For the Stein-factorization specialization (M=N=R):
 
 ```m2
-homData     = steinHomData(S, IGraph)
-algebraData = steinCoordinateAlgebra(homData, evaluationElementIndex)
+homData     = steinHomData(S, Igraph)
+algebraData = steinCoordinateAlgebra homData
 graphData   = directSteinGraph(homData, algebraData)
 ```
+
+The evaluation element is chosen internally because it does not change the
+resulting subring.  Pass its generator index as a second argument to
+`steinCoordinateAlgebra` only when a particular localization is wanted.
 
 Corollary 4.3 is stated in terms of the block dimensions `d1,d2` and the sums
 `c1,c2` of the degrees of each block's variables, but the degrees of `S`
@@ -115,14 +122,14 @@ ring says which those are.
 For a known or experimental truncation bound:
 
 ```m2
-data = steinHomDataAtBound(S, IGraph, {r1,r2})
+data = steinHomDataAtBound(S, Igraph, {r1,r2})
 ```
 
 For heuristic stabilization using the full finite `A`-module strand:
 
 ```m2
 result = steinDataByStabilization(
-    S, IGraph, startBound, maxSteps, requiredMatches, hilbertMax)
+    S, Igraph, startBound, maxSteps, requiredMatches, hilbertMax)
 ```
 
 Stabilization always reports `certifiedBound => false`; finite agreement does

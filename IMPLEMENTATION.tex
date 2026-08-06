@@ -138,8 +138,8 @@ it, and recover the graph of \(h\). Each returns a table that the next one
 consumes, so they are meant to be called in this order.
 
 \begin{verbatim}
-homData     = steinHomData(S, graphIdeal)
-algebraData = steinCoordinateAlgebra(homData, evaluationElementIndex)
+homData     = steinHomData(S, Igraph)
+algebraData = steinCoordinateAlgebra homData
 graphData   = directSteinGraph(homData, algebraData)
 \end{verbatim}
 
@@ -149,17 +149,14 @@ graphData   = directSteinGraph(homData, algebraData)
 \texttt{S} is the ambient bigraded polynomial ring, the coordinate ring
 of the product of the two (weighted) projective spaces in which the graph
 sits; its variables are the two blocks described above.
-\texttt{graphIdeal} is the bihomogeneous ideal \(I_{\Gamma_f}\subset S\)
+\texttt{Igraph} is the bihomogeneous ideal \(I_{\Gamma_f}\subset S\)
 cutting the graph out of that product, so that \(R=S/I_{\Gamma_f}\). 
 
-% Those two arguments are all that is needed. Corollary 4.3 is stated in
-% terms of the dimensions \(d_s\) of the two ambient (weighted) projective
-% spaces and the sums \(c_s=\sum_{t=0}^{d_s}c_{s,t}\) of the degrees of the
-% variables in each block, but the degrees of \texttt{S} already determine
-% all four, so they are computed rather than passed. (\texttt{blockDegreeData
-% S} returns them, and Section \ref{sec:weighted} uses it to exhibit the one
-% case where they are not obvious: \(c_s\) is a weight sum, equal to the
-% number of variables in the block only when every weight is \(1\).)
+Those two arguments are all that is needed. Corollary 4.3 also uses the
+dimensions \(d_s\) of the ambient projective spaces and the sums \(c_s\) of
+the variable degrees in each block, but the grading of \texttt{S} determines
+them.  The function \texttt{blockDegreeData S} returns the four values; in a
+weighted block \(c_s\) is the weight sum rather than the variable count.
 
 The returned \texttt{homData} carries everything the later steps need: the
 bound \(\mathbf{r}\) and whether it is certified, the ring \(R\), the
@@ -185,12 +182,12 @@ identifies \(C\) with a subring of \(R[1/\gamma]\), and the multiplication
 on \(C\) is the one inherited from that identification. This evaluation is
 Lemma 5.2.
 
-\texttt{evaluationElementIndex} is an integer rather than a ring element:
-it is the position, counted from \texttt{0}, of \(\gamma\) in the list of
-generators of \(R_{\geq\mathbf{r}}\). By the independence just noted the
-subring obtained does not depend on it; only the localization the
-computation is carried out in does. The examples all take \texttt{0}, the
-first generator.
+By the independence just noted, the subring obtained does not depend on the
+chosen \(\gamma\).  The one-argument call therefore uses the first generator
+of \(R_{\geq\mathbf r}\).  The two-argument form
+\texttt{steinCoordinateAlgebra(homData,i)} remains available when a particular
+localization is wanted; \texttt{i} is the generator position counted from
+\texttt{0}.
 
 The subring \(A=R_{(0,\geq0)}\) the strand is finite over is not an
 argument. A bidegree \((0,n)\) piece of \(S\) is spanned by the monomials
@@ -286,8 +283,10 @@ bound in place of a computed one, and returns the same kind of table with
 
 \section{Environment and reproducibility}\label{sec:reproducibility}
 
-The computations were run with Macaulay2 1.24.11 on macOS (Apple
-Silicon, 2023). The relevant bundled packages include
+The timings and transcripts below were recorded with Macaulay2 1.24.11 on
+macOS (Apple Silicon, 2023).  Current development and testing use Macaulay2
+1.26.06; the timings have not been remeasured.  Version 1.24.11 is the oldest
+version the package is believed to support.  The relevant bundled packages include
 \texttt{Truncations}, \texttt{MinimalPrimes}, and \texttt{Saturation}.
 Measured wall-clock times on that machine: \texttt{tests/basic.m2} about
 4 s, \texttt{tests/global-hom.m2} under 1 s,

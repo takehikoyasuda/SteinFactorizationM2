@@ -21,20 +21,20 @@ check rather than remember.
 
 | Page | Source | Reviewed | Notes |
 |---|---|---|---|
-| `SteinFactorization` (top) | [491](SteinFactorization.m2#L491) | ✅ `c624921` | |
-| `steinHomData` | [534](SteinFactorization.m2#L534) | ✅ `e8dde8a` | Was one example block covering two paragraphs; split, and `certifiedBound` given the gloss it lacked |
-| `steinCoordinateAlgebra` | [596](SteinFactorization.m2#L596) | — | |
-| `directSteinGraph` | [674](SteinFactorization.m2#L674) | — | |
-| `blockDegreeData` | [741](SteinFactorization.m2#L741) | — | |
-| `steinHomDataAtBound` | [788](SteinFactorization.m2#L788) | — | |
-| `steinDataByStabilization` | [836](SteinFactorization.m2#L836) | — | Known: the first example block has no prose introducing it, the same fault `steinHomData` had |
-| `certifiedHomogeneousGraph` | [891](SteinFactorization.m2#L891) | — | |
-| `certifiedWeightedGraph` | [937](SteinFactorization.m2#L937) | — | |
-| `selectCertifiedGraphComponent` | [985](SteinFactorization.m2#L985) | — | |
-| `certifyChartwiseProjectionIsomorphism` | [1023](SteinFactorization.m2#L1023) | — | |
-| `evaluateSteinGenerators` | [1074](SteinFactorization.m2#L1074) | — | |
-| `bigradedGlobalHomData` | [1126](SteinFactorization.m2#L1126) | — | |
-| `Bibliography` | [1180](SteinFactorization.m2#L1180) | — | |
+| `SteinFactorization` (top) | [552](SteinFactorization.m2#L552) | — | Earlier acceptance withdrawn after adding the workflow and assumptions |
+| `steinHomData` | [615](SteinFactorization.m2#L615) | — | Earlier acceptance withdrawn after further prose changes |
+| `steinCoordinateAlgebra` | [690](SteinFactorization.m2#L690) | — | |
+| `directSteinGraph` | [834](SteinFactorization.m2#L834) | — | |
+| `blockDegreeData` | [913](SteinFactorization.m2#L913) | — | |
+| `steinHomDataAtBound` | [960](SteinFactorization.m2#L960) | — | |
+| `steinDataByStabilization` | [1010](SteinFactorization.m2#L1010) | — | |
+| `certifiedHomogeneousGraph` | [1081](SteinFactorization.m2#L1081) | — | |
+| `certifiedWeightedGraph` | [1140](SteinFactorization.m2#L1140) | — | |
+| `selectCertifiedGraphComponent` | [1197](SteinFactorization.m2#L1197) | — | |
+| `checkChartwiseInverses` | [1238](SteinFactorization.m2#L1238) | — | Renamed because the old function did not certify a graph projection |
+| `evaluateSteinGenerators` | [1289](SteinFactorization.m2#L1289) | — | |
+| `bigradedGlobalHomData` | [1341](SteinFactorization.m2#L1341) | — | |
+| `Bibliography` | [1404](SteinFactorization.m2#L1404) | — | |
 
 Line numbers move as the documentation is edited; they are a convenience, not a
 record.  The page names are what is stable.
@@ -43,10 +43,11 @@ record.  The page names are what is stable.
 
 - The documentation is now where the reference material lives, so the overlap
   with Section 2 of `IMPLEMENTATION.tex` wants resolving one way or the other.
-- `IMPLEMENTATION.tex` still records the environment as Macaulay2 1.24.11 with
-  timings measured there; the package is now built and tested against 1.26.06.
-- `newPackage` supplies no `HomePage`, which is what M2 1.26 is asking for when
-  it warns about insufficient citation data.
 - Nothing links a page back to the source that generates it.  M2 prints a
   source location on every page, but it is the position of the `doc` block and
   therefore the same on all fourteen.
+- `checkChartwiseInverses` intentionally checks only a cover and inverse map
+  pairs.  A genuine chart certificate would need to bind these rings and maps
+  to localizations of the source and the graph and verify overlap compatibility.
+- The prose interpreting the exact order of generators in
+  `evaluateSteinGenerators` can become stale if Macaulay2 changes that order.

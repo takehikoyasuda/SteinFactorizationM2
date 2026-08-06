@@ -1,5 +1,12 @@
 needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
+errorsOut = f -> (
+    stopIfError = false;
+    result := try (f(); false) else true;
+    stopIfError = true;
+    result
+    );
+
 -- Test 1: identity P^1 -> P^1.
 s1 = QQ[y0,y1,x0,x1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
 iid = ideal(y0*x1-y1*x0);
@@ -13,7 +20,7 @@ isq = ideal(y0^2*x1-y1^2*x0);
 dsq = steinHomData(s1,isq);
 assert(dsq#"bound" == {1,0});
 assert(dsq#"steinGeneratorDegrees" == {{0,0},{0,1}});
-csqGeneral = steinCoordinateAlgebra(dsq,0);
+csqGeneral = steinCoordinateAlgebra dsq;
 assert(codim(csqGeneral#"definingIdeal") == 1);
 assert(numgens(csqGeneral#"definingIdeal") == 1);
 gsqDirect = directSteinGraph(dsq,csqGeneral);
@@ -87,13 +94,14 @@ assert(stabCubic#"stabilized");
 assert(stabCubic#"chosenBound" == {3,0});
 assert(not stabCubic#"certifiedBound");
 
--- Automatic graph construction and isomorphism certificate for h.
+-- Automatic graph construction; projection to the source is an isomorphism by
+-- construction, not the outcome of a separate chart computation.
 sourceP1 = QQ[r0,r1,Degrees=>{1,1}];
 zeroSourceIdeal = ideal(0_sourceP1);
 graphCertificate = certifiedHomogeneousGraph(
     sourceP1,zeroSourceIdeal,{r1^3,r0*r1^2,r0^2*r1,r0^3});
 assert(graphCertificate#"basePointFree");
-assert(graphCertificate#"projectionIsomorphismCertified");
+assert(graphCertificate#"projectionIsomorphismByConstruction");
 selectedGraphIndex = selectCertifiedGraphComponent(
     graphCertificate,{graphCertificate#"graphIdeal"});
 assert(selectedGraphIndex == 0);
@@ -135,8 +143,8 @@ icm = kernel phim;
 expectedMixed = ideal(M1^2-M0*M2,M1*M2-M0*M3,M2^2-M1*M3);
 assert(icm == expectedMixed);
 
--- Chart-gluing certificate for the projection Gamma_h -> Y in the mixed
--- example.  The four Segre charts a,b,c,d != 0 cover Y.  On the a,b charts
+-- Arithmetic used in a chartwise proof for the projection Gamma_h -> Y in the
+-- mixed example.  The four Segre charts a,b,c,d != 0 cover Y.  On the a,b charts
 -- put r=t/s; on c,d put r=s/t.  The three affine twisted-cubic coordinates
 -- are r,r^2,r^3, so every graph chart is explicitly the source chart.
 bseg0 = QQ[ya,yb,yc,yd,Degrees=>{1,1,1,1}];
@@ -166,10 +174,11 @@ gd = gd0/ideal(qd1-rgd,qd2-rgd^2,qd3-rgd^3);
 fd = map(gd,ad,{rgd,wgd});
 igd = map(ad,gd,{rd,wd,rd,rd^2,rd^3});
 
-mixedChartCertificate = certifyChartwiseProjectionIsomorphism(
+mixedChartChecks = checkChartwiseInverses(
     bseg,{ya,yb,yc,yd},{{fa,iga},{fb,igb},{fc,igc},{fd,igd}});
-assert(mixedChartCertificate#"projectionIsomorphismCertified");
-assert(mixedChartCertificate#"numberOfCharts" == 4);
+assert(mixedChartChecks#"coverVerified");
+assert(all(mixedChartChecks#"inversePairChecks",value -> value));
+assert(mixedChartChecks#"numberOfCharts" == 4);
 
 -- Test 5: P^2 -> P^2, [s:t:u] |-> [s^2:t^2:u^2].
 -- The Stein intermediate is P^2 in its quadratic Veronese embedding in P^5.
@@ -218,13 +227,27 @@ assert(isPrime(cp2c#"definingIdeal"));
 gp2c = directSteinGraph(dp2c,cp2c);
 assert(isPrime(gp2c#"graphIdeal"));
 
+-- Public entry points reject malformed or unrelated data before an obscure
+-- downstream error occurs.
+use s1;
+assert(errorsOut(() -> steinHomDataAtBound(s1,isq,{1})));
+assert(errorsOut(() -> steinCoordinateAlgebra(dsq,99)));
+assert(errorsOut(() -> evaluateSteinGenerators(dsq,99)));
+assert(errorsOut(() -> steinDataByStabilization(s1,isq,{1,0},2,2,2)));
+assert(errorsOut(() -> steinDataByStabilization(s1,isq,{1,0},3,1,-1)));
+assert(errorsOut(() -> directSteinGraph(did,steinCoordinateAlgebra dsq)));
+foreignRing = QQ[foreign0,foreign1];
+assert(errorsOut(() ->
+    selectCertifiedGraphComponent(graphCertificate,{ideal(foreign0)})));
+
 print("OK identity: C has one generator over the target data.");
 print("OK square map: C is the plane conic X0*X1=z^2.");
 print("OK cubic map: C is the twisted cubic.");
 print("OK cubic factorization: g o h = f and h# is injective.");
 print("OK direct strategy: Hom evaluations produce prime saturated graph closures.");
 print("OK mixed example: P1xP1 -> P1 has twisted-cubic Stein intermediate.");
-print("OK mixed graph: four affine charts glue and projection Gamma_h -> Y is an isomorphism.");
+print("OK mixed charts: the supplied elements cover and each ring-map pair is inverse.");
 print("OK P2 square map: Stein ring is the degree-4 Veronese surface (6 quadrics in P5).");
 print("OK P2 direct graph: localized Hom construction gives a prime graph closure.");
 print("OK P2 cube map: third-Veronese Hilbert values H(1)=10, H(2)=28; ring and graph are prime.");
+print("OK validation: malformed bounds, indices and unrelated tables are rejected.");

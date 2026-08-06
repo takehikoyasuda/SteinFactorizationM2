@@ -79,8 +79,9 @@ cFromGraph = steinCoordinateAlgebra(dFromGraph,0);
 assert(apply({1,2,3},n -> hilbertFunction(n,cFromGraph#"ring")) == {2,3,4});
 
 -- Test 5: a weighted target.  A morphism to P(a_0,...,a_n) is cut out by forms
--- with deg(h_i) = a_i*e for one common e; (r0,r1^2) with weights (1,2) is the
--- isomorphism P^1 -> P(1,2).
+-- with deg(h_i) = a_i*e for one common e.  With weights (1,2), (r0,r1^2)
+-- defines a degree-two map P^1 -> P(1,2): on the chart y0 != 0, the invariant
+-- coordinate y1/y0^2 pulls back to (r1/r0)^2.
 sourceStd = QQ[r0,r1];
 gWtTarget = certifiedWeightedGraph(sourceStd,ideal(0_sourceStd),{r0,r1^2},{1,2});
 assert(gWtTarget#"basePointFree");
