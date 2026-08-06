@@ -41,7 +41,7 @@ dIso = steinHomData(sWt,iIso);
 assert(dIso#"certifiedBound");
 assert(dIso#"bound" == {0,0});
 assert(dIso#"steinGeneratorDegrees" == {{0,0}});
-cIso = steinCoordinateAlgebra(dIso,0,{x0,x1});
+cIso = steinCoordinateAlgebra(dIso,0);
 assert(numgens(cIso#"definingIdeal") == 0);
 assert(dim(cIso#"ring") == 2);
 assert(apply({1,2,3},n -> hilbertFunction(n,cIso#"ring")) == {2,3,4});
@@ -57,7 +57,7 @@ dSq = steinHomData(sWt,iSq);
 assert(dSq#"certifiedBound");
 assert(dSq#"bound" == {2,0});
 assert(dSq#"steinGeneratorDegrees" == {{0,0},{0,1}});
-cSq = steinCoordinateAlgebra(dSq,0,{x0,x1});
+cSq = steinCoordinateAlgebra(dSq,0);
 assert(numgens(cSq#"definingIdeal") == 1);
 assert(codim(cSq#"definingIdeal") == 1);
 assert(dim(cSq#"ring") == 2);
@@ -75,8 +75,7 @@ assert(degrees(gWtSource#"productRing") == {{1,0},{2,0},{0,1},{0,1}});
 assert(blockDegreeData(gWtSource#"productRing") == {1,1,3,2});
 dFromGraph = steinHomData(gWtSource#"productRing",gWtSource#"graphIdeal");
 assert(dFromGraph#"bound" == {0,0});
-targetVars = drop(flatten entries vars (gWtSource#"productRing"),2);
-cFromGraph = steinCoordinateAlgebra(dFromGraph,0,targetVars);
+cFromGraph = steinCoordinateAlgebra(dFromGraph,0);
 assert(apply({1,2,3},n -> hilbertFunction(n,cFromGraph#"ring")) == {2,3,4});
 
 -- Test 5: a weighted target.  A morphism to P(a_0,...,a_n) is cut out by forms

@@ -22,7 +22,7 @@ assert(d#"bound" == {2,0});
 assert(d#"steinGeneratorDegrees" ==
     {{0,0},{0,1},{0,1},{0,1}});
 
-c = steinCoordinateAlgebra(d,0,{y0,y1,y2});
+c = steinCoordinateAlgebra(d,0);
 jc = c#"definingIdeal";
 -- Intermediate is P^2 with its second Veronese section ring.
 assert(dim(c#"ring") == 3);

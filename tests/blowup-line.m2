@@ -26,7 +26,7 @@ d = steinHomData(sgraph,igraph);
 assert(d#"bound" == {2,0});
 assert(#d#"steinGeneratorIndices" == 8);
 
-c = steinCoordinateAlgebra(d,0,{y0,y1,y2,y3});
+c = steinCoordinateAlgebra(d,0);
 jc = c#"definingIdeal";
 -- C is the second Veronese ring of P^3.  The Hom-as-A-module presentation
 -- contains one redundant degree-two algebra generator, hence 11 variables.

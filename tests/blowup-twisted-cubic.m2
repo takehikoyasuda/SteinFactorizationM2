@@ -49,7 +49,7 @@ d = steinHomDataAtBound(sgraph,igraph,{2,0});
 print("strand degrees at r=2: " | toString d#"steinGeneratorDegrees");
 assert(d#"steinGeneratorDegrees" == {
     {0,0},{0,1},{0,1},{0,1},{0,1},{0,1},{0,1},{0,2}});
-c = steinCoordinateAlgebra(d,0,{y0,y1,y2,y3});
+c = steinCoordinateAlgebra(d,0);
 assert(dim(c#"ring") == 4);
 assert(hilbertFunction(1,c#"ring") == 10);
 assert(hilbertFunction(2,c#"ring") == 35);
