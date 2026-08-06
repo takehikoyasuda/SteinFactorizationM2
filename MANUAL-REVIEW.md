@@ -21,20 +21,26 @@ check rather than remember.
 
 | Page | Source | Reviewed | Notes |
 |---|---|---|---|
-| `SteinFactorization` (top) | [491](SteinFactorization.m2#L491) | ✅ `c624921` | |
-| `steinHomData` | [534](SteinFactorization.m2#L534) | ✅ `e8dde8a` | Was one example block covering two paragraphs; split, and `certifiedBound` given the gloss it lacked |
-| `steinCoordinateAlgebra` | [596](SteinFactorization.m2#L596) | — | |
-| `directSteinGraph` | [674](SteinFactorization.m2#L674) | — | |
-| `blockDegreeData` | [741](SteinFactorization.m2#L741) | — | |
-| `steinHomDataAtBound` | [788](SteinFactorization.m2#L788) | — | |
-| `steinDataByStabilization` | [836](SteinFactorization.m2#L836) | — | Known: the first example block has no prose introducing it, the same fault `steinHomData` had |
-| `certifiedHomogeneousGraph` | [891](SteinFactorization.m2#L891) | — | |
-| `certifiedWeightedGraph` | [937](SteinFactorization.m2#L937) | — | |
-| `selectCertifiedGraphComponent` | [985](SteinFactorization.m2#L985) | — | |
-| `certifyChartwiseProjectionIsomorphism` | [1023](SteinFactorization.m2#L1023) | — | |
-| `evaluateSteinGenerators` | [1074](SteinFactorization.m2#L1074) | — | |
-| `bigradedGlobalHomData` | [1126](SteinFactorization.m2#L1126) | — | |
-| `Bibliography` | [1180](SteinFactorization.m2#L1180) | — | |
+| `SteinFactorization` (top) | [571](SteinFactorization.m2#L571) | — | Acceptance at `c624921` withdrawn: the page has since gained an end-to-end example and an assumptions paragraph |
+| `steinHomData` | [665](SteinFactorization.m2#L665) | — | Acceptance at `e8dde8a` withdrawn: prose changed after it |
+| `steinCoordinateAlgebra` | [756](SteinFactorization.m2#L756) | — | |
+| `directSteinGraph` | [940](SteinFactorization.m2#L940) | — | |
+| `blockDegreeData` | [1046](SteinFactorization.m2#L1046) | — | |
+| `steinHomDataAtBound` | [1095](SteinFactorization.m2#L1095) | — | |
+| `steinDataByStabilization` | [1159](SteinFactorization.m2#L1159) | — | |
+| `certifiedHomogeneousGraph` | [1260](SteinFactorization.m2#L1260) | — | |
+| `certifiedWeightedGraph` | [1335](SteinFactorization.m2#L1335) | — | |
+| `selectCertifiedGraphComponent` | [1416](SteinFactorization.m2#L1416) | — | |
+| `checkChartwiseInverses` | [1465](SteinFactorization.m2#L1465) | — | Renamed from `certifyChartwiseProjectionIsomorphism`, which claimed more than it checked |
+| `evaluateSteinGenerators` | [1538](SteinFactorization.m2#L1538) | — | |
+| `bigradedGlobalHomData` | [1599](SteinFactorization.m2#L1599) | — | |
+| `Bibliography` | [1671](SteinFactorization.m2#L1671) | — | |
+
+Every page is unreviewed as of the revision applying
+[MANUAL-REVISION-PLAN.md](MANUAL-REVISION-PLAN.md).  The two ticks that stood
+before it are withdrawn rather than carried over: both pages were edited by
+that revision, which is exactly the situation the revision column exists to
+make visible.
 
 Line numbers move as the documentation is edited; they are a convenience, not a
 record.  The page names are what is stable.
@@ -43,10 +49,17 @@ record.  The page names are what is stable.
 
 - The documentation is now where the reference material lives, so the overlap
   with Section 2 of `IMPLEMENTATION.tex` wants resolving one way or the other.
-- `IMPLEMENTATION.tex` still records the environment as Macaulay2 1.24.11 with
-  timings measured there; the package is now built and tested against 1.26.06.
-- `newPackage` supplies no `HomePage`, which is what M2 1.26 is asking for when
-  it warns about insufficient citation data.
 - Nothing links a page back to the source that generates it.  M2 prints a
   source location on every page, but it is the position of the `doc` block and
   therefore the same on all fourteen.
+- `checkChartwiseInverses` checks a cover and a list of inverse pairs and says
+  so, which is honest but is not the chart certificate the name it used to have
+  promised.  A real one would bind each chart's cover element, source
+  localization, graph localization, projection and inverse into a single input,
+  check the structural maps, and check the overlaps.  That is a design and not a
+  repair, and it has not been attempted.
+- The `evaluateSteinGenerators` page reads $\gamma=y_1$ and the second evaluated
+  generator as $y_0x_1$ off the printed output.  The output is displayed before
+  the prose interprets it, so nothing is asserted behind the reader's back, but
+  a change in Macaulay2's generator ordering would leave the prose stale without
+  failing the build.  No test pins the ordering down.

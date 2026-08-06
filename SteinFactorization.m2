@@ -4,6 +4,7 @@ newPackage(
     Date => "5 August 2026",
     Headline => "Stein factorization of a projective morphism given by its graph",
     Authors => {{ Name => "Takehiko Yasuda", Email => "yasuda.takehiko.sci@osaka-u.ac.jp" }},
+    HomePage => "https://github.com/takehikoyasuda/SteinFactorizationM2",
     Keywords => { "Algebraic Geometry" },
     PackageExports => { "Truncations", "Saturation", "MinimalPrimes" },
     AuxiliaryFiles => false
@@ -21,7 +22,7 @@ export {
     "certifiedWeightedGraph",
     "certifiedHomogeneousGraph",
     "selectCertifiedGraphComponent",
-    "certifyChartwiseProjectionIsomorphism"
+    "checkChartwiseInverses"
     }
 
 
@@ -110,6 +111,13 @@ bigradedGlobalHomBound = (sourceResolution,targetAmbientResolution,d1,d2,c1,c2) 
 -- Note: supplying targetModuleOverAmbient explicitly ensures that the bound uses the
 --       S-free resolution required by Proposition 4.2, rather than an R-free resolution.
 bigradedGlobalHomData = (ambient,sourceModule,targetModule,targetModuleOverAmbient) -> (
+    -- Cheap: the two modules Hom is taken between must live over one ring.  That
+    -- targetModuleOverAmbient really presents targetModule after restriction is
+    -- not checked, and checking it would cost about what this function costs.
+    if ring sourceModule =!= ring targetModule then
+        error "the source and target modules must be modules over the same ring";
+    if ring targetModuleOverAmbient =!= ambient then
+        error "the target over the ambient ring must be a module over that ring";
     bd := blockDegreeData ambient;
     (d1,d2,c1,c2) := (bd#0,bd#1,bd#2,bd#3);
     -- sourceLowerShift reads the 0th term and nothing else, so the free cover is
@@ -180,8 +188,17 @@ steinHomData = (ambient,igraph) -> (
         }
     );
 
+-- A bound is a bidegree, and the two entries mean different blocks.  Say so on
+-- the way in rather than let a one-entry or three-entry list reach truncate.
+checkBidegree = (bound,what) -> (
+    if not instance(bound,List) or #bound != 2
+        or not all(bound,i -> instance(i,ZZ)) then
+        error(what | " must be a list of two integers");
+    );
+
 -- Note: no free resolution is computed, so certifiedBound is false.
 steinHomDataAtBound = (ambient,igraph,bound) -> (
+    checkBidegree(bound,"the truncation bound");
     rr := ambient/igraph;
     truncation := truncate(bound,rr^1);
     rawHomModule := Hom(truncation,rr^1,MinimalGenerators=>true);
@@ -205,8 +222,26 @@ steinHomDataAtBound = (ambient,igraph,bound) -> (
         }
     );
 
+-- gamma is a generator of R_{>=r}, named by its position.  Out of range, the
+-- bare matrix subscript would report an array index and not say what was wrong;
+-- and gamma=0 would make the evaluation of Lemma 5.2 meaningless rather than
+-- merely undefined, since the whole point is to divide by it.
+evaluationElementOf = (homData,evaluationElementIndex) -> (
+    gg := gens homData#"truncation";
+    if not instance(evaluationElementIndex,ZZ)
+        or evaluationElementIndex < 0
+        or evaluationElementIndex >= numColumns gg then
+        error("the evaluation element index must be an integer between 0 and "
+            | toString(numColumns gg - 1)
+            | ", the truncation having that many generators");
+    gamma := gg_(0,evaluationElementIndex);
+    if gamma == 0 then error "the chosen evaluation element is zero";
+    gamma
+    );
+
 -- Note: Lemma 5.2 uses psi_i(gamma)/gamma as the corresponding coordinate function.
 evaluateSteinGenerators = (homData,evaluationElementIndex) -> (
+    evaluationElementOf(homData,evaluationElementIndex);
     ee := homData#"evaluationMatrix";
     apply(homData#"steinGeneratorIndices",i -> ee_(evaluationElementIndex,i))
     );
@@ -224,14 +259,21 @@ targetBlockGenerators = ambient -> (
 
 -- Note: the degree-(0,0) Hom generator is the unit and is omitted as an extra algebra generator.
 -- TODO: organize the finite A-module presentation of the full strand more completely.
-steinCoordinateAlgebra = (homData,evaluationElementIndex) -> (
+steinCoordinateAlgebra = method()
+
+-- Lemma 5.2 says the subring does not depend on which gamma is taken, so the
+-- index is an implementation choice and not a mathematical input.  The
+-- one-argument form makes it, and the two-argument form is for saying otherwise.
+steinCoordinateAlgebra HashTable := homData -> steinCoordinateAlgebra(homData,0)
+
+steinCoordinateAlgebra(HashTable,ZZ) := (homData,evaluationElementIndex) -> (
     baseGenerators := targetBlockGenerators homData#"ambient";
     rr := homData#"ring";
     tt := homData#"truncation";
     hh := homData#"homModule";
     wanted := homData#"steinGeneratorIndices";
     extra := select(wanted,i -> (degrees hh)#i != {0,0});
-    gamma := (gens tt)_(0,evaluationElementIndex);
+    gamma := evaluationElementOf(homData,evaluationElementIndex);
     dg := degree gamma;
     -- getSymbol rather than a bare name: inside a package a bare name would be
     -- an unexported symbol of the package, which a ring may not adopt as a
@@ -298,8 +340,16 @@ steinFingerprint = (algebraData,hilbertMax) -> (
 -- Note: because only finitely many matches are tested, certifiedBound is always false.
 steinDataByStabilization = (
     ambient,igraph,startBound,maxSteps,requiredMatches,hilbertMax) -> (
+    checkBidegree(startBound,"the start bound");
     if maxSteps < 2 then error "maxSteps must be at least 2";
     if requiredMatches < 1 then error "requiredMatches must be positive";
+    -- n runs give at most n-1 comparisons, so asking for more agreements than
+    -- that is asking for a search that cannot succeed however the runs come out.
+    if requiredMatches > maxSteps-1 then
+        error("requiredMatches " | toString requiredMatches | " cannot be reached in "
+            | toString maxSteps | " steps, which admit only "
+            | toString(maxSteps-1) | " comparisons");
+    if hilbertMax < 0 then error "hilbertMax must be nonnegative";
     history := {};
     previousFingerprint := null;
     consecutiveMatches := 0;
@@ -344,6 +394,11 @@ directSteinGraph = (homData,algebraData) -> (
     rr := homData#"ring";
     pp := algebraData#"polynomialRing";
     ll := algebraData#"localizationPresentation";
+    -- The localization was built as R[1/gamma] for the R of this homData, so its
+    -- coefficient ring identifies which homData the algebraData came from.  Two
+    -- tables from different runs are the mistake this catches.
+    if coefficientRing ll =!= rr then
+        error "the algebra data was not built from this hom data";
     cimages := algebraData#"images";
     avars := flatten entries vars ambient;
     zvars := flatten entries vars pp;
@@ -439,7 +494,10 @@ certifiedWeightedGraph = (sourcePolynomialRing,sourceIdeal,hImages,targetWeights
         "productRing" => productRing,
         "graphIdeal" => graphIdeal,
         "basePointFree" => basePointFree,
-        "projectionIsomorphismCertified" => true,
+        -- Not the result of a check: the graph of a morphism out of a proper Y
+        -- always projects isomorphically to Y, and basePointFree above is what
+        -- establishes that there is a morphism here at all.  The name says so.
+        "projectionIsomorphismByConstruction" => true,
         "sourceVariableCount" => ny,
         "targetVariableCount" => nz,
         "targetWeights" => targetWeights,
@@ -457,6 +515,8 @@ certifiedHomogeneousGraph = (sourcePolynomialRing,sourceIdeal,hImages) -> (
 -- Note: candidates are compared after saturation by the biprojective irrelevant ideal.
 selectCertifiedGraphComponent = (certified,candidates) -> (
     pp := certified#"productRing";
+    if not all(candidates,cc -> ring cc === pp) then
+        error "every candidate must be an ideal of the certified product ring";
     ny := certified#"sourceVariableCount";
     vv := flatten entries vars pp;
     iy := ideal take(vv,ny);
@@ -480,19 +540,27 @@ ringMapsAreInverse = (ff,gg) -> (
         )
     );
 
--- Note: this verifies explicitly supplied charts; it does not automatically generate the graph.
-certifyChartwiseProjectionIsomorphism = (sourceRing,coverElements,chartMapPairs) -> (
+-- Note: this checks charts that the caller supplies.  It does not generate them
+-- from a graph, and nothing here ties the i-th map pair to the i-th cover
+-- element, to a localization of sourceRing, or to the output of
+-- directSteinGraph; that identification is the caller's to make.  So the result
+-- records the two things actually established -- that the elements cover, and
+-- which pairs are mutually inverse -- and nothing beyond them.
+checkChartwiseInverses = (sourceRing,coverElements,chartMapPairs) -> (
+    if #coverElements != #chartMapPairs then
+        error("there must be one map pair per cover element, but "
+            | toString(#coverElements) | " cover elements were given with "
+            | toString(#chartMapPairs) | " map pairs");
     irr := ideal gens sourceRing;
     coverIdeal := ideal coverElements;
     covers := saturate(coverIdeal,irr) == ideal(1_sourceRing);
     if not covers then error "the supplied affine charts do not cover Proj(sourceRing)";
     localChecks := apply(chartMapPairs,pair -> ringMapsAreInverse(pair#0,pair#1));
-    if not all(localChecks,b -> b) then error "at least one chart map is not an isomorphism";
+    if not all(localChecks,b -> b) then
+        error "at least one chart map pair is not a pair of mutually inverse ring maps";
     new HashTable from {
         "coverCertified" => covers,
         "localIsomorphismsCertified" => localChecks,
-        "overlapCompatibilityCertified" => true,
-        "projectionIsomorphismCertified" => true,
         "numberOfCharts" => #chartMapPairs
         }
     );
@@ -510,8 +578,8 @@ Node
       For a projective morphism of algebraic varieties $f\colon Y \to X$, a
       {\em Stein factorization} is a decomposition
       $$Y \xrightarrow{\ h\ } Z \xrightarrow{\ g\ } X$$
-      in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (so that $h$
-      has connected fibers) and $g$ is finite; concretely
+      in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (so that the
+      fibres of $h$ are geometrically connected) and $g$ is finite; concretely
       $Z=\operatorname{Spec}_X f_*\mathcal{O}_Y$.  This package turns the
       algorithm of @TO2 {"Bibliography", "Yasuda (2026)"}@, Section 5.1, into an
       executable prototype.
@@ -521,7 +589,58 @@ Node
       have degrees $(\ast,0)$ and those in the target block $(0,\ast)$, the
       starred entries being positive; in the standard case they are $(1,0)$
       and $(0,1)$, and allowing larger values is what admits weighted
-      projective spaces.
+      projective spaces.  The two blocks are the two spaces $f$ runs between:
+      the first is the (weighted) projective space $Y$ sits in --- so that the
+      source block carries the chosen projective embedding of $Y$, and with it
+      the polarization everything below is computed for --- and the second is
+      the one $X$ sits in.  $Z$ appears in neither; producing it is the point.
+    Text
+      The construction is three calls.  Take the finite square map
+      $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$, whose graph is one
+      bihomogeneous equation:
+    Example
+      S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
+      Igraph = ideal(y0^2*x1 - y1^2*x0);
+      homData = steinHomData(S, Igraph);
+      algebraData = steinCoordinateAlgebra homData;
+      graphData = directSteinGraph(homData, algebraData);
+    Text
+      Three keys hold the principal results.  The bidegree the Hom module was
+      truncated at, which here was read off a resolution rather than guessed:
+    Example
+      homData#"bound"
+    Text
+      A graded coordinate algebra for $Z$, as a quotient ring:
+    Example
+      algebraData#"ring"
+    Text
+      And the bihomogeneous ideal of the graph of $h\colon Y\to Z$:
+    Example
+      graphData#"graphIdeal"
+    Text
+      The pages of @TO steinHomData@, @TO steinCoordinateAlgebra@ and
+      @TO directSteinGraph@ take those three steps in turn; the rest of the
+      package is either an alternative to the first step or a way of building
+      the input to it.
+    Text
+      {\bf Assumptions.}  The construction takes several things for granted,
+      and checks some of them.  The coefficient ring is expected to be a field.
+      $I_{\Gamma_f}$ is expected to be prime, so that $R$ is a domain: the
+      evaluation of Lemma 5.2 that gives the strand its multiplication is
+      injective for that reason and not otherwise, and
+      @TO evaluateSteinGenerators@ says where it is used.  The input is
+      expected to be the graph of a morphism rather than an arbitrary
+      bihomogeneous subscheme of the product.  No restriction is placed on the
+      characteristic.
+
+      Of these, only the block structure is checked --- by
+      @TO blockDegreeData@, which every entry point calls before doing anything
+      else, and which rejects a variable belonging to both blocks or to
+      neither.  Primality is not tested, and neither is the claim that the
+      input is a graph; both are expensive relative to the rest of the
+      computation on the inputs this package is aimed at.  Build the input with
+      @TO certifiedHomogeneousGraph@ or @TO certifiedWeightedGraph@ and it is a
+      graph by construction, which is the reason those exist.
   Subnodes
     :The three steps of the construction
       steinHomData
@@ -536,7 +655,7 @@ Node
       certifiedHomogeneousGraph
       certifiedWeightedGraph
       selectCertifiedGraphComponent
-      certifyChartwiseProjectionIsomorphism
+      checkChartwiseInverses
     :Underneath the three steps
       bigradedGlobalHomData
       evaluateSteinGenerators
@@ -577,12 +696,12 @@ Node
       $X$, not for $\mathcal{O}_Z(1)$.  That is worth knowing before reading
       any output off it: a $Z$ which is $\mathbb{P}^1$ can come back as a
       conic.
-
-    --   Those two arguments are all that is needed.  Corollary 4.3 is stated in
-    --   terms of the dimensions $d_s$ of the two ambient projective spaces and
-    --   the sums $c_s$ of the degrees of the variables in each block, but the
-    --   degrees of {\tt S} already determine all four, so they are computed
-    --   rather than passed; see @TO blockDegreeData@.
+    Text
+      Computing the bound means resolving $R$ over $S$ out to homological
+      degree $d_1+d_2+1$, and on larger inputs that resolution is the most
+      expensive thing the package does.  @TO steinHomDataAtBound@ is the same
+      computation with a bound supplied instead of derived, for inputs where
+      this one does not finish.
     Text
       Consider the finite square map $[s:t]\mapsto[s^2:t^2]$ of
       $\mathbb{P}^1$.  Its graph is cut out by one bihomogeneous equation:
@@ -604,6 +723,30 @@ Node
       There are two strand generators: the unit in bidegree $(0,0)$, and one
       further generator in bidegree $(0,1)$.  That extra generator is what
       distinguishes the Stein intermediate $Z$ from $X$.
+    Text
+      {\bf The result table.}  These are the keys meant to be read; the
+      remainder are working values, and what is in them may change.
+
+      {\tt "bound"} is the bidegree $\mathbf{r}$ truncated at and
+      {\tt "certifiedBound"} whether it came from a resolution, which here it
+      always did.  {\tt "ring"} is the quotient $R=S/I_{\Gamma_f}$,
+      {\tt "truncation"} is $R_{\ge\mathbf{r}}$, and {\tt "resolution"} is the
+      bounded $S$-free resolution the bound was read off.
+      {\tt "homModule"} is $\operatorname{Hom}_R(R_{\ge\mathbf{r}},R)$
+      truncated to the nonnegative orthant, {\tt "evaluationMatrix"} its
+      generators as a matrix with one column per generator, and
+      {\tt "steinGeneratorIndices"} and {\tt "steinGeneratorDegrees"} say which
+      of those generators lie in the $(0,\ge0)$-strand and in what bidegrees.
+      The generators of the truncation are what
+      @TO evaluateSteinGenerators@ indexes into.
+
+      The two module keys are easy to confuse.  {\tt "homModule"} is truncated
+      to the nonnegative orthant $\ge(0,0)$, which is a bigraded module still
+      carrying generators of every bidegree $(a,b)$ with $a,b\ge0$;
+      $C$ is the strand $a=0$ inside it, and
+      {\tt "steinGeneratorIndices"} is how that strand is picked out.  The
+      truncation is taken first because the orthant is what
+      @TO truncate@ can be asked for, and the strand is selected afterwards.
   SeeAlso
     blockDegreeData
     steinCoordinateAlgebra
@@ -613,16 +756,19 @@ Node
 Node
   Key
     steinCoordinateAlgebra
+    (steinCoordinateAlgebra,HashTable)
+    (steinCoordinateAlgebra,HashTable,ZZ)
   Headline
     a graded coordinate algebra for the Stein intermediate
   Usage
+    algebraData = steinCoordinateAlgebra homData
     algebraData = steinCoordinateAlgebra(homData, evaluationElementIndex)
   Inputs
     homData:HashTable
       as returned by @TO steinHomData@ or @TO steinHomDataAtBound@
     evaluationElementIndex:ZZ
       which generator of $R_{\ge\mathbf{r}}$ to use as the evaluation element
-      $\gamma$, counted from $0$
+      $\gamma$, counted from $0$; optional, and $0$ if omitted
   Outputs
     :HashTable
       holding the graded coordinate algebra of $Z$ under {\tt "ring"}, as the
@@ -643,19 +789,62 @@ Node
       described.  This function carries it out and then eliminates, returning
       $C$ as a quotient of a polynomial ring.
 
-    --   The subring $A$ is not an argument.  A bidegree $(0,n)$ piece of $S$ is
-    --   spanned by the monomials in the target block alone, so $A=R_{(0,\ge0)}$
-    --   is generated by the images of the target-block variables --- the
-    --   coordinates of $X$ --- and the ambient ring already says which variables
-    --   those are.  Passing them would be passing back what
-    --   @TO blockDegreeData@ has just worked out, and passing anything else
-    --   would be asking for a subring that is not $A$.
+      The subring $A=R_{(0,\ge0)}$ that $C$ is finite over is not an argument.
+      A bidegree $(0,n)$ piece of $S$ is spanned by the monomials in the target
+      block alone, so $A$ is generated by the images of the target-block
+      variables --- the coordinates of $X$ --- and the ambient ring already
+      says which variables those are.  Passing them would be passing back what
+      @TO blockDegreeData@ has just worked out, and passing anything else would
+      be asking for a subring that is not $A$.
 
-    --   The point of the whole computation is that $C$ is larger than $A$: the
-    --   extra algebra generators are the evaluated Hom generators, and they are
-    --   what distinguishes $Z$ from $X$.
+      The point of the whole computation is that $C$ is larger than $A$: the
+      extra algebra generators are the evaluated Hom generators, and they are
+      what distinguishes $Z$ from $X$.
     Text
-      Take
+      Neither is $\gamma$ an argument, in the ordinary case.  The subring
+      obtained does not depend on which generator of $R_{\ge\mathbf{r}}$ is
+      taken --- only the localization the computation is carried out in does
+      --- so the one-argument form makes the choice, taking the first
+      generator.  Supply an index to override it.
+    Text
+      Continue the square map $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$ from
+      @TO steinHomData@:
+    Example
+      S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
+      Igraph = ideal(y0^2*x1 - y1^2*x0);
+      homData = steinHomData(S, Igraph);
+      algebraData = steinCoordinateAlgebra homData;
+      algebraData#"ring"
+    Text
+      The coordinate algebra is that ring, and it is the quotient
+      {\tt "polynomialRing"}$/${\tt "definingIdeal"} of the next two:
+    Example
+      algebraData#"polynomialRing"
+      algebraData#"definingIdeal"
+    Text
+      $X$ is $\mathbb{P}^1$ here, so $A=k[p_0,p_1]$ is a polynomial ring; the
+      third variable $p_2$ is the one evaluated Hom generator, and the single
+      relation is what it satisfies over $A$.  That relation is a conic, and
+      the $Z$ it presents is a $\mathbb{P}^1$: the algebra is the section ring
+      for the polarization pulled back from $X$, which is $\mathcal{O}(2)$
+      here, not for $\mathcal{O}_Z(1)$.
+    Text
+      {\bf The result table.}  These are the keys meant to be read; the
+      remainder are working values.  {\tt "ring"} is the coordinate algebra,
+      {\tt "polynomialRing"} and {\tt "definingIdeal"} the quotient it is
+      presented as, and {\tt "images"} the elements of $R[1/\gamma]$ that the
+      variables of {\tt "polynomialRing"} stand for, in the same order ---
+      first the target-block coordinates, then the evaluated Hom generators.
+      {\tt "baseRing"} is $A$ and {\tt "baseInclusion"} the map $A\to R$;
+      {\tt "strandAsAModule"} and {\tt "strandAPresentation"} are $C$ as a
+      finite $A$-module and its presentation.  {\tt "evaluationElement"} is the
+      $\gamma$ actually used and {\tt "localizationPresentation"} the
+      $R[1/\gamma]$ built to divide by it; {\tt "extraHomIndices"} says which
+      strand generators got a variable of their own, the unit in bidegree
+      $(0,0)$ being the one that does not, and {\tt "mapToLocalization"} is the
+      map whose kernel is {\tt "definingIdeal"}.
+    Text
+      {\bf An advanced example: $C$ not free over $A$.}  Take
       $$f\colon Y=\mathbb{P}^1_{s:t}\times\mathbb{P}^1_{u:v}\
       \xrightarrow{\ h\ }\ Z=\mathbb{P}^1_{u:v}\ \xrightarrow{\ g\ }\ X,$$
       with $h$ the second projection and $X$ the conic $x_0x_2=x_1^2$ in
@@ -670,9 +859,8 @@ Node
       Igraph = kernel map(auxiliaryRing, S,
           {s*u*a, s*v*a, t*u*a, t*v*a, u^4*b, u^2*v^2*b, v^4*b});
       homData = steinHomData(S, Igraph);
-      algebraData = steinCoordinateAlgebra(homData, 0);
+      algebraData = steinCoordinateAlgebra homData;
     Text
-    --   Of those, only {\tt S} and {\tt Igraph} are arguments to anything here.
       {\tt S} is the coordinate ring of $\mathbb{P}^3\times\mathbb{P}^2$, the
       $\mathbb{P}^3$ being where $Y$ sits by the Segre embedding.  The
       auxiliary ring is only for writing the graph down: $s,t$ and $u,v$ are
@@ -680,7 +868,9 @@ Node
       two blocks separately, which is what makes the kernel bihomogeneous ---
       the device the parameter $t$ performs in @TO directSteinGraph@.
     Text
-      The coordinate algebra of $Z$ is the first of these modulo the second:
+      The coordinate algebra of $Z$ is again
+      {\tt "polynomialRing"}$/${\tt "definingIdeal"}, and this time neither is
+      small:
     Example
       algebraData#"polynomialRing"
       algebraData#"definingIdeal"
@@ -704,34 +894,44 @@ Node
       algebraData#"strandAsAModule"
       algebraData#"strandAPresentation"
     Text
-      Neither of the two things on show here is guaranteed.  $A$ is the
-      coordinate ring of the conic rather than a polynomial ring, because the
-      target is a proper subvariety of $\mathbb{P}^2$; send $Y$ onto a whole
-      projective space instead and the target coordinates become
-      algebraically independent, so $A$ is free of relations.  And $C$ is not
-      free over $A$: $\mathcal{O}_X(1)$ restricted to a conic is
-      $\mathcal{O}(2)$ on the $\mathbb{P}^1$ underneath it, so $A$ reaches
-      only the monomials of even degree there, while $C_n=k[u,v]_{4n}$
-      contains the odd ones too.  The two of those in degree one, $uv^3$ and
-      $u^3v$, are the extra module generators, and the two columns of the
-      presentation are what they satisfy.  Where the finite part is a
-      coordinatewise power map onto a whole projective space --- which is what
-      most of the examples in this package are --- the module comes out free
-      instead and the presentation is the zero matrix.
+      Neither of the two things on show here is guaranteed, and the square map
+      above showed neither.  What $A$ is: the coordinate ring of the conic, not
+      a polynomial ring, because $X$ is a proper subvariety of $\mathbb{P}^2$
+      and its three coordinates satisfy the equation cutting it out.  Send $Y$
+      onto a whole projective space instead --- which is what the square map
+      does --- and the target coordinates are algebraically independent, so $A$
+      comes back free of relations.
+    Text
+      What $C$ is: the section ring $\bigoplus_n H^0(Z,g^*\mathcal{O}_X(1)^n)$,
+      and $Z$ is the $\mathbb{P}^1_{u:v}$ that $h$ projects onto.  Since $g$
+      maps it two-to-one onto the conic, $g^*\mathcal{O}_X(1)$ is
+      $\mathcal{O}(4)$ on that $\mathbb{P}^1$, so $C_n=k[u,v]_{4n}$.
+    Text
+      Why $C$ is not free over $A$: $\mathcal{O}_X(1)$ restricted to the conic
+      is $\mathcal{O}(2)$ on the $\mathbb{P}^1$ underneath it, so the image of
+      $A$ in degree $n$ is spanned by the monomials $A$ can reach, which are
+      the $u^iv^j$ of degree $4n$ with $i$ even.  $C_n$ contains the odd ones
+      too.  In degree one the two missing monomials are $uv^3$ and $u^3v$, and
+      those are the two extra generators of $C$ as an $A$-module.
+    Text
+      What the presentation says: its two columns are the relations those two
+      generators satisfy over $A$.  Where the finite part is a coordinatewise
+      power map onto a whole projective space --- which is what most of the
+      examples in this package are --- the module comes out free instead and
+      the presentation is the zero matrix, as it is for the square map.
     Text
       This example is {\tt tests/conic-target.m2}, where the fibres are
       checked as well.
-    Text
-      By the independence of the evaluation from the choice of $\gamma$, the
-      subring obtained does not depend on {\tt evaluationElementIndex}; only the
-      localization the computation is carried out in does.  Passing $0$, the
-      first generator, is what the examples all do.
   Caveat
     A generator of $C$ as a finite $A$-module need not be needed as an algebra
     generator.  When one is redundant the presentation simply carries a
-    variable more than necessary --- the quotient ring is still the right one,
-    but @TO directSteinGraph@ has not been run to completion on such an input;
-    see {\tt tests/blowup-twisted-cubic.m2}.
+    variable more than necessary; the quotient ring is still the right one.
+    What that costs is the next step: @TO directSteinGraph@ eliminates in a
+    ring with one variable per algebra generator, and a redundant variable
+    enlarges the elimination.  On {\tt tests/blowup-twisted-cubic.m2} it has
+    not been run to completion for that reason --- an expected cost rather than
+    a known error in the answer.  Minimizing the algebra generators is the
+    obvious remedy and is not implemented.
   SeeAlso
     steinHomData
     evaluateSteinGenerators
@@ -748,7 +948,9 @@ Node
     homData:HashTable
       as returned by @TO steinHomData@ or @TO steinHomDataAtBound@
     algebraData:HashTable
-      as returned by @TO steinCoordinateAlgebra@ from that same {\tt homData}
+      as returned by @TO steinCoordinateAlgebra@ from that same {\tt homData};
+      the two must correspond, and that they do is checked by comparing the
+      ring $R$ against the one the localization was built over
   Outputs
     :HashTable
       holding the bihomogeneous ideal of the graph of $h\colon Y\to Z$ under
@@ -781,15 +983,26 @@ Node
       Without it the kernel would also record that each $z_i$ equals one
       particular element $c_i$, which is not a statement about $Z$ as a
       projective variety.
-
+    Text
       Working over $R[1/\gamma]$ rather than $R$ is what saturates the result.
+      An $F$ vanishing on $\Gamma_h$ away from $\{\gamma=0\}$ has
+      $\gamma^kF=0$ in $R$ for some $k$, and in $R[1/\gamma]$ that says
+      $F=0$; so the kernel taken there is already saturated with respect to
+      $\gamma$, and what comes back is the closure of the part of the graph
+      lying over $\{\gamma\neq0\}$.  Taking the kernel over $R$ instead would
+      return an ideal with the same zero locus off $\{\gamma=0\}$ but embedded
+      components along it.  Nothing is saturated with respect to the
+      biprojective irrelevant ideal; the result table records the one that was
+      done under {\tt "saturationByLocalization"}, which is a statement about
+      the method and not the outcome of a test.
     Example
       S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
       Igraph = ideal(y0^2*x1 - y1^2*x0);
       homData = steinHomData(S, Igraph);
-      algebraData = steinCoordinateAlgebra(homData, 0);
+      algebraData = steinCoordinateAlgebra homData;
       graphData = directSteinGraph(homData, algebraData);
       degrees graphData#"jointRing"
+      graphData#"graphIdeal"
       isHomogeneous graphData#"graphIdeal"
       isPrime graphData#"graphIdeal"
     Text
@@ -800,9 +1013,35 @@ Node
       localization instead would lose the grading of its coefficient ring $R$
       and report $(0,0)$ for a target coordinate, leaving the ideal not even
       homogeneous.
+    Text
+      Reading the ideal takes knowing which variable is which.  The joint ring
+      is generated automatically, so all seven print as $p_0,\dots,p_6$: the
+      degrees above say that $p_0,p_1$ are the source coordinates $y_0,y_1$ and
+      $p_2,p_3$ the target coordinates $x_0,x_1$, and the remaining
+      $p_4,p_5,p_6$ are the three $z_i$, in the order
+      @TO steinCoordinateAlgebra@ produced its algebra generators --- so
+      $p_4,p_5$ stand for the coordinates of $X$ again and $p_6$ for the
+      evaluated Hom generator.  That last one is the new coordinate, the one
+      that makes this $Z$ rather than $X$.
+    Text
+      The seven relations then fall into four kinds.  One, $p_1^2p_2-p_0^2p_3$,
+      is the equation of $\Gamma_f$ carried over unchanged.  One,
+      $p_4p_5-p_6^2$, is the conic that @TO steinCoordinateAlgebra@ returned:
+      $Z$ in its own coordinates.  Two, $p_3p_4-p_2p_5$ and its consequences,
+      say $[p_4:p_5]=[x_0:x_1]$ --- proportionality rather than equality,
+      because the $z_i$ are coordinates on their own projective space.  And the
+      two that write $p_6$ down over $Y$, $p_1p_4-p_0p_6$ and $p_0p_5-p_1p_6$,
+      are where $h$ itself is recorded: $p_6/p_4=y_0/y_1$, which is the
+      coordinate function $y_0x_1/y_1$ divided by $x_0$.
+    Text
+      {\bf The result table.}  {\tt "jointRing"} is the ring $J$ above,
+      {\tt "graphIdeal"} the kernel, and {\tt "graphMap"} the map $\Phi$ it is
+      the kernel of.  {\tt "ambientVariableCount"} and
+      {\tt "steinVariableCount"} say where the variables of $J$ split into the
+      two groups, and {\tt "saturationByLocalization"} is the note above.
   SeeAlso
     steinCoordinateAlgebra
-    certifyChartwiseProjectionIsomorphism
+    checkChartwiseInverses
 
 Node
   Key
@@ -814,7 +1053,9 @@ Node
   Inputs
     S:Ring
       a bigraded ring in which every variable has degree $(\ast,0)$ or
-      $(0,\ast)$, the starred entry positive
+      $(0,\ast)$, the starred entry positive; in the rest of the package this
+      is the ambient polynomial ring, but only the degrees are read, so a
+      quotient of one answers as well
   Outputs
     :List
       the four integers $\{d_1,d_2,c_1,c_2\}$: the dimensions $d_s$ of the two
@@ -864,7 +1105,8 @@ Node
     Igraph:Ideal
       the bihomogeneous ideal $I_{\Gamma_f}\subset S$
     r:List
-      the bidegree $\mathbf{r}=(r_1,r_2)$ to truncate at
+      the bidegree $\mathbf{r}=(r_1,r_2)$ to truncate at, a list of exactly two
+      integers
   Outputs
     :HashTable
       the table @TO steinHomData@ returns, except that {\tt "bound"} is the
@@ -879,6 +1121,13 @@ Node
       Nothing downstream changes: the result feeds
       @TO steinCoordinateAlgebra@ and @TO directSteinGraph@ exactly as before.
       What is lost is the guarantee that $\mathbf{r}$ was large enough.
+
+      ``Large enough'' is meant componentwise: Corollary 4.3 produces one
+      bidegree, and any $\mathbf{r}$ with $r_1\ge$ its first entry and
+      $r_2\ge$ its second does as well, because truncating further only
+      removes elements the Hom module was going to ignore.  Componentwise is a
+      partial order, so two supplied bounds need not be comparable at all, and
+      neither being larger than the other says nothing about either.
     Example
       S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
       Igraph = ideal(y0^2*x1 - y1^2*x0);
@@ -887,9 +1136,17 @@ Node
       homData#"steinGeneratorDegrees"
     Text
       Here $(1,0)$ happens to be the bound @TO steinHomData@ computes for this
-      input, so the two agree; the difference is that nothing in this call
-      established that.  In {\tt tests/blowup-twisted-cubic.m2} the source sits
-      in $\mathbb{P}^{11}$, the certified bound is out of reach, and
+      input, so the two agree:
+    Example
+      certifiedData = steinHomData(S, Igraph);
+      homData#"bound" == certifiedData#"bound"
+    Text
+      The difference is that nothing in the call above established that.  In
+      {\tt tests/blowup-twisted-cubic.m2} the source sits in
+      $\mathbb{P}^{11}$ and the target in $\mathbb{P}^3$, so the resolution
+      Corollary 4.3 asks for runs to homological degree
+      $d_1+d_2+1=15$ over a ring in sixteen variables and has not been
+      computed here;
       $\mathbf{r}=(2,0)$ is supplied and then checked against independently
       known geometry instead.
 
@@ -912,13 +1169,15 @@ Node
     Igraph:Ideal
       the bihomogeneous ideal $I_{\Gamma_f}\subset S$
     startBound:List
-      the bidegree to start from; its first coordinate is what gets incremented
+      the bidegree to start from, a list of exactly two integers; its first
+      coordinate is what gets incremented
     maxSteps:ZZ
       how many bounds to try at most, at least $2$
     requiredMatches:ZZ
-      how many consecutive agreements to insist on, at least $1$
+      how many consecutive agreements to insist on, at least $1$ and at most
+      {\tt maxSteps}$-1$, since $n$ runs admit only $n-1$ comparisons
     hilbertMax:ZZ
-      how far out to compare Hilbert functions
+      how far out to compare Hilbert functions, nonnegative
   Outputs
     :HashTable
       recording whether the answer stabilized, the bound and the two tables
@@ -932,6 +1191,17 @@ Node
       same Krull dimension, the same Hilbert values out to {\tt hilbertMax},
       and the same degrees of the strand as an $A$-module.  After
       {\tt requiredMatches} consecutive agreements the search stops.
+    Text
+      Those three numbers are a fingerprint and not the answer itself.  They
+      are what can be compared cheaply between two runs whose results live in
+      different rings: the two coordinate algebras are quotients of polynomial
+      rings with possibly different numbers of variables, so they cannot simply
+      be tested for equality, while dimension, finitely many Hilbert values and
+      module-generator degrees are numbers.  What a fingerprint can miss is
+      accordingly anything that leaves all three fixed --- two non-isomorphic
+      algebras with the same Hilbert function, or a change first visible in
+      degree greater than {\tt hilbertMax}, or a change in the relations that
+      does not move the generator degrees.
     Text
       Take the finite square map $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$
       again: start at $(1,0)$, try at most three bounds, and stop after a
@@ -947,12 +1217,13 @@ Node
       stab#"chosenBound"
       stab#"stepsRun"
     Text
-      The runs at $(1,0)$ and $(2,0)$ agreed, so the search stopped there.  The
-      bound reported is the last one run, not the earliest that agreed.  Here
-      $(1,0)$ is the bound @TO steinHomData@ certifies for this input, so the
-      heuristic is being checked against an answer that can be had outright;
-      that is the only place it can be checked, since where it is actually
-      wanted the certified bound is out of reach.
+      The runs at $(1,0)$ and $(2,0)$ agreed, so the search stopped there.
+      {\tt "chosenBound"} is the last bound run, which is the later member of
+      the matching pair and not the earliest bound that agreed; the tables
+      returned are that run's.  Here $(1,0)$ is the bound @TO steinHomData@
+      certifies for this input, so the heuristic is being run against an answer
+      that can also be had outright --- a sanity check on the method, on a case
+      where the certified bound is available for comparison.
     Text
       That the answer stopped moving is evidence and not more than evidence:
       only finitely many bounds were tried, and nothing rules out a later one
@@ -961,6 +1232,27 @@ Node
     Example
       stab#"certifiedBound"
       stab#"warning"
+    Text
+      {\bf The result table.}  Besides those two, {\tt "stabilized"} says
+      whether the search met its target rather than exhausting
+      {\tt maxSteps}, {\tt "stepsRun"} how many bounds were tried,
+      {\tt "consecutiveMatches"} how many agreements in a row it ended on, and
+      {\tt "chosenBound"}, {\tt "homData"} and {\tt "algebraData"} are the last
+      run.  {\tt "history"} is one hash table per run, each with that run's
+      {\tt "bound"}, its {\tt "fingerprint"} --- the triple of dimension,
+      Hilbert values and module-generator degrees compared above --- and its
+      own {\tt "homData"} and {\tt "algebraData"}, so that a run other than the
+      last can be taken up if wanted.
+  Caveat
+    Only the first coordinate of the bound is incremented.  That is the
+    direction the truncation actually needs: the strand being computed is
+    $(0,\ge0)$, so enlarging $r_2$ discards target-block degrees the answer is
+    read off, whereas enlarging $r_1$ discards source-block degrees the strand
+    does not see.  Corollary 4.3 moves both coordinates, so a search along the
+    first alone is not a search through all bounds it might have produced; if
+    the second coordinate of {\tt startBound} is too small, no number of steps
+    here will find that out.  Choose it from the geometry, or from a certified
+    bound on a smaller instance of the same shape.
   SeeAlso
     steinHomData
     steinHomDataAtBound
@@ -978,8 +1270,9 @@ Node
     I:Ideal
       an ideal of {\tt B}, so that the source is $Y=\operatorname{Proj}(B/I)$
     hImages:List
-      forms of one and the same degree in $B/I$, the coordinates $h_i$ of the
-      morphism $f\colon Y\to\mathbb{P}^n$
+      forms of one and the same degree, the coordinates $h_i$ of the morphism
+      $f\colon Y\to\mathbb{P}^n$; representatives in {\tt B} are what to pass,
+      and they are reduced into $B/I$ on the way in
   Outputs
     :HashTable
       holding the bigraded product ring under {\tt "productRing"} and the
@@ -1004,9 +1297,37 @@ Node
       degrees graphData#"productRing"
       graphData#"graphIdeal"
     Text
+      That ideal in that ring is exactly what @TO steinHomData@ takes, which is
+      the reason this function is in the package:
+    Example
+      homData = steinHomData(graphData#"productRing", graphData#"graphIdeal");
+      homData#"bound"
+      homData#"steinGeneratorDegrees"
+    Text
+      The strand has only its unit generator, which says that $Z=X$ here: the
+      twisted cubic map is a closed immersion, so $f$ is already finite and
+      there is nothing for $h$ to contract.  A morphism with connected fibres
+      to find is what the examples on the other pages have.
+    Text
       This is the all-weights-one case of @TO certifiedWeightedGraph@, which is
       also where the proportionality test there reduces to ``all coordinate
       degrees agree''.
+    Text
+      {\bf The result table.}  {\tt "productRing"} and {\tt "graphIdeal"} are
+      the pair to pass on; {\tt "sourceVariableCount"} and
+      {\tt "targetVariableCount"} say where the variables of the product ring
+      split, {\tt "targetWeights"} records the weights (all $1$ here), and
+      {\tt "sourceIdealLift"} is {\tt I} moved into the product ring.
+
+      Two of the keys are claims, and they are of different kinds.
+      {\tt "basePointFree"} is the outcome of a computation: the ideal of the
+      $h_i$ is saturated by the irrelevant ideal and the result compared with
+      the unit ideal, and a base locus is an error rather than a value of
+      {\tt false}.  {\tt "projectionIsomorphismByConstruction"} is not the
+      outcome of anything --- the graph of a morphism out of a proper $Y$
+      always projects isomorphically to $Y$, and base-point-freeness is what
+      says there is a morphism here.  The kernel returned is a graph because it
+      was built as one, not because it was tested.
   SeeAlso
     certifiedWeightedGraph
     steinHomData
@@ -1024,7 +1345,9 @@ Node
     I:Ideal
       an ideal of {\tt B}, so that the source is $Y=\operatorname{Proj}(B/I)$
     hImages:List
-      the coordinates $h_i$ of the morphism, in $B/I$
+      the coordinates $h_i$ of the morphism; as in
+      @TO certifiedHomogeneousGraph@, pass representatives in {\tt B} and they
+      are reduced into $B/I$
     targetWeights:List
       positive integers $a_0,\dots,a_n$ giving the target
       $\mathbb{P}(a_0,\dots,a_n)$
@@ -1038,12 +1361,37 @@ Node
       $\deg(h_i)=a_ie$ for one common $e$, which is the unweighted ``all
       degrees equal'' when every $a_i$ is $1$.
     Text
-      The isomorphism $\mathbb{P}^1\to\mathbb{P}(1,2)$ given by $(r_0,r_1^2)$:
+      What the common multiplier $e$ is, geometrically: it is the degree in
+      which the $h_i$ are being read as sections, so that the morphism pulls
+      $\mathcal{O}(1)$ on the target back to $\mathcal{O}(e)$ on the source.
+      That the degrees are proportional to the weights is what makes the
+      morphism well defined --- under $r\mapsto\lambda r$ the tuple
+      $(h_0,\dots,h_n)$ goes to
+      $(\lambda^{a_0e}h_0,\dots,\lambda^{a_ne}h_n)$, which is the weighted
+      scaling by $\lambda^e$ --- and it says nothing whatever about whether
+      the morphism is finite, birational or an isomorphism.
+    Text
+      A degree-two morphism $\mathbb{P}^1\to\mathbb{P}(1,2)$, given by
+      $(r_0,r_1^2)$:
     Example
       B = QQ[r0,r1];
       graphData = certifiedWeightedGraph(B, ideal(0_B), {r0,r1^2}, {1,2});
       degrees graphData#"productRing"
       graphData#"graphIdeal"
+    Text
+      Reading a weighted target takes one more step than an unweighted one.
+      On the chart $y_0\neq0$ of $\mathbb{P}(1,2)$ the coordinate is not
+      $y_1/y_0$, which is not invariant under
+      $(y_0,y_1)\mapsto(\lambda y_0,\lambda^2y_1)$, but $u=y_1/y_0^2$.  The map
+      above pulls it back to $(r_1/r_0)^2$, the square of a coordinate on
+      $\mathbb{P}^1$, so it has degree two.  Equivalently: compose with the
+      isomorphism $\mathbb{P}(1,2)\to\mathbb{P}^1$, $[y_0:y_1]\mapsto
+      [y_0^2:y_1]$, and the composite is $[r_0:r_1]\mapsto[r_0^2:r_1^2]$.  No
+      map of this shape can be an isomorphism: with $e=1$ the composite is
+      always $[h_0^2:h_1]$ for a linear $h_0$ and a quadratic $h_1$.  For an
+      isomorphism between the two, go the other way, by the equal weighted
+      degree forms $(y_0^2,y_1)$ on $\mathbb{P}(1,2)$; that is Test 2 of
+      {\tt tests/weighted.m2}.
     Text
       A weighted source survives the construction as well: the source block
       keeps the degrees it had in {\tt B} and only gains the block index, so
@@ -1054,7 +1402,13 @@ Node
       The weights are required rather than inferred from the degrees of the
       $h_i$.  Inferring them would read a mistyped coordinate as a deliberate
       weighted target and proceed silently; demanding them turns the same
-      mistake into a rejected input.
+      mistake into a rejected input.  Dropping the square above leaves
+      coordinates of degrees $(1,1)$, which are not proportional to $(1,2)$:
+    Example
+      try (certifiedWeightedGraph(B, ideal(0_B), {r0,r1}, {1,2}); "accepted") else "rejected"
+    Text
+      Inferred weights would have read that as a perfectly good morphism to
+      $\mathbb{P}^1$ instead.
   SeeAlso
     certifiedHomogeneousGraph
     blockDegreeData
@@ -1065,15 +1419,16 @@ Node
   Headline
     pick out the certified graph among a list of candidate ideals
   Usage
-    i = selectCertifiedGraphComponent(certified, candidates)
+    candidateIndex = selectCertifiedGraphComponent(certifiedGraphData, candidateIdeals)
   Inputs
-    certified:HashTable
+    certifiedGraphData:HashTable
       as returned by @TO certifiedHomogeneousGraph@ or
       @TO certifiedWeightedGraph@
-    candidates:List
-      ideals of its {\tt "productRing"}
+    candidateIdeals:List
+      ideals of its {\tt "productRing"}; a candidate belonging to some other
+      ring is rejected rather than compared
   Outputs
-    :ZZ
+    candidateIndex:ZZ
       the position of the one candidate that is the certified graph
   Description
     Text
@@ -1082,6 +1437,11 @@ Node
       comparing each candidate with the certified graph after saturating both
       by the biprojective irrelevant ideal $I_YI_Z$ --- the comparison that
       makes two ideals with the same biprojective zero locus count as the same.
+
+      Producing the candidates is not this function's business, nor any other
+      function's here: they come from a decomposition carried out elsewhere,
+      and what this package supplies is the certified graph to test them
+      against.
     Example
       B = QQ[r0,r1];
       graphData = certifiedHomogeneousGraph(B, ideal(0_B),
@@ -1093,17 +1453,22 @@ Node
       Anything other than exactly one match is an error: no match means the
       certified graph is not among the candidates, and several would mean the
       saturation failed to tell them apart.
+  Caveat
+    Because the comparison is made after saturation, what the returned index
+    identifies is a biprojective subscheme and not an ideal.  A candidate
+    agreeing with the certified graph away from the irrelevant locus is
+    reported as the match even if the two ideals differ.
   SeeAlso
     certifiedHomogeneousGraph
     certifiedWeightedGraph
 
 Node
   Key
-    certifyChartwiseProjectionIsomorphism
+    checkChartwiseInverses
   Headline
-    certify that the projection from the graph of h to Y is an isomorphism
+    check a cover and a list of mutually inverse ring map pairs
   Usage
-    cert = certifyChartwiseProjectionIsomorphism(sourceRing, coverElements, chartMapPairs)
+    checks = checkChartwiseInverses(sourceRing, coverElements, chartMapPairs)
   Inputs
     sourceRing:Ring
       the homogeneous coordinate ring of $Y$
@@ -1111,39 +1476,61 @@ Node
       homogeneous elements whose non-vanishing loci cover
       $\operatorname{Proj}$ of it
     chartMapPairs:List
-      one pair $\{\varphi,\psi\}$ of ring maps per chart, going in opposite
-      directions
+      one pair $\{\varphi,\psi\}$ of ring maps per cover element, going in
+      opposite directions; there must be as many pairs as cover elements
   Outputs
     :HashTable
-      recording that the charts cover, which of them checked out, and the
-      resulting {\tt "projectionIsomorphismCertified"}
+      recording that the elements cover, under {\tt "coverCertified"}, and
+      which pairs are mutually inverse, under
+      {\tt "localIsomorphismsCertified"}
   Description
     Text
       @TO directSteinGraph@ returns the graph of $h\colon Y\to Z$ as an ideal;
       that the projection $\Gamma_h\to Y$ is an isomorphism, so that the ideal
       really does present $h$ as a morphism out of $Y$, is a separate claim.
-      This checks it one affine chart at a time: that the supplied charts cover
-      $Y$, by a saturation, and that on each one the two supplied ring maps
-      compose to the identity in both directions.
+      One way to establish it is chart by chart, and this is the arithmetic
+      part of that argument: it checks that the supplied elements cover
+      $\operatorname{Proj}(\mathtt{sourceRing})$, by a saturation, and that in
+      each supplied pair the two ring maps compose to the identity in both
+      directions.
+    Text
+      What it does not do is as important.  Nothing here ties the $i$-th map
+      pair to the $i$-th cover element, or either ring of a pair to the
+      corresponding localization of {\tt sourceRing}, or any of it to the graph
+      @TO directSteinGraph@ returned.  Mutually inverse maps between rings that
+      have nothing to do with the problem will pass.  Making the
+      identification --- these rings are the charts of $Y$ and of $\Gamma_h$,
+      and these maps are the projection and its inverse --- is the caller's
+      part of the argument, and it is the part that is not checked.  So the
+      result is reported as two checks rather than as a certificate, and no key
+      of it says that the projection is an isomorphism.
     Text
       The squaring map of $\mathbb{P}^1$, on its two standard charts.  On
       $y_1\neq0$ the source coordinate is $r=y_0/y_1$ and the graph chart is
       $\{(r,q):q=r^2\}$, whose projection to the $r$-line is inverted by
-      $r\mapsto(r,r^2)$; the chart $y_0\neq0$ is the same with $s=y_1/y_0$:
+      $r\mapsto(r,r^2)$; the chart $y_0\neq0$ is the same with $s=y_1/y_0$.
+      The cover elements are listed in the order the pairs are:
     Example
       Y = QQ[y0,y1];
       A0 = QQ[r]; G0 = QQ[rg,q0]/ideal(q0-rg^2);
       A1 = QQ[s]; G1 = QQ[sg,q1]/ideal(q1-sg^2);
-      cert = certifyChartwiseProjectionIsomorphism(Y, {y0,y1},
+      checks = checkChartwiseInverses(Y, {y1,y0},
           {{map(G0,A0,{rg}), map(A0,G0,{r,r^2})},
            {map(G1,A1,{sg}), map(A1,G1,{s,s^2})}});
-      cert#"numberOfCharts"
-      cert#"projectionIsomorphismCertified"
+      checks#"numberOfCharts"
+      checks#"coverCertified"
+      checks#"localIsomorphismsCertified"
+    Text
+      That order is not checked either --- listing the elements the other way
+      round would pass just the same.  It is written correctly because the
+      reader is meant to follow the argument, not because the function can
+      tell.
   Caveat
-    This verifies charts that the caller supplies; it does not generate them
-    from the graph, and it does not check that the charts are compatible on
-    their overlaps.  A worked instance with four charts, for the
-    $\mathbb{P}^1\times\mathbb{P}^1\to\mathbb{P}^1$ example whose Stein
+    Compatibility on overlaps is not checked, and neither is anything relating
+    the charts to each other.  Local isomorphisms on a cover do glue to a
+    global one when they agree on overlaps, so this is a proper part of that
+    argument and not the whole of it.  A worked instance with four charts, for
+    the $\mathbb{P}^1\times\mathbb{P}^1\to\mathbb{P}^1$ example whose Stein
     intermediate is the twisted cubic, is in {\tt tests/basic.m2}.
   SeeAlso
     directSteinGraph
@@ -1160,11 +1547,14 @@ Node
       as returned by @TO steinHomData@ or @TO steinHomDataAtBound@
     evaluationElementIndex:ZZ
       the position, counted from $0$, of $\gamma$ in the list of generators of
-      $R_{\ge\mathbf{r}}$
+      $R_{\ge\mathbf{r}}$; it must be one of $0,\dots,n-1$ for the $n$
+      generators that {\tt homData\#"truncation"} has, and the generator it
+      names must be nonzero
   Outputs
     :List
       the elements $\varphi_i(\gamma)\in R$, one for each generator $\varphi_i$
-      of the $(0,\ge0)$-strand
+      of the $(0,\ge0)$-strand, in the order of
+      {\tt homData\#"steinGeneratorDegrees"}
   Description
     Text
       The strand $C$ carries no multiplication of its own, being a module of
@@ -1172,8 +1562,15 @@ Node
       it one by realizing it inside a localization: fix a nonzero
       $\gamma\in R_{\ge\mathbf{r}}$ and send
       $$\varphi\longmapsto\varphi(\gamma)/\gamma\in R[1/\gamma].$$
-      $R$ is a domain, $\Gamma_f$ being a variety, so this is injective, and it
-      does not depend on which $\gamma$ is taken: for any other
+      This is injective provided $R$ is a domain: if $\varphi(\gamma)=0$ then
+      $\gamma\varphi(\gamma')=\varphi(\gamma'\gamma)=\gamma'\varphi(\gamma)=0$
+      for every $\gamma'\in R_{\ge\mathbf{r}}$, and cancelling the nonzero
+      $\gamma$ --- which is where the domain hypothesis is used and the only
+      place it is --- gives $\varphi=0$.  That $R$ is a domain is the
+      standing assumption that $I_{\Gamma_f}$ is prime, described under
+      @TO SteinFactorization@; nothing in this package tests it, and on a
+      non-prime input the map above may lose information without saying so.
+      The evaluation does not depend on which $\gamma$ is taken: for any other
       $\gamma'\in R_{\ge\mathbf{r}}$ we have
       $\gamma'\varphi(\gamma)=\varphi(\gamma'\gamma)=\gamma\varphi(\gamma')$,
       whence $\varphi(\gamma)/\gamma=\varphi(\gamma')/\gamma'$.  It therefore
@@ -1215,7 +1612,9 @@ Node
     N:Module
       the target module, over the same $R$
     NS:Module
-      the same target presented over {\tt S} rather than over $R$
+      the same target presented over {\tt S} rather than over $R$; that it
+      really does present {\tt N} after restriction is not checked, and
+      checking it would cost about what this function costs
   Outputs
     :HashTable
       carrying the certified bound, the free cover of {\tt M} and the ambient
@@ -1233,6 +1632,15 @@ Node
       not over $R$, where the resolution would in general be infinite; supplying
       {\tt NS} explicitly is what guarantees the right one is used.
     Text
+      The two sides are resolved to different depths, and the result table
+      keeps them apart.  Proposition 4.2 reads shifts out to homological degree
+      $d_1+d_2+1$ on the target side, and {\tt "targetAmbientResolution"} is
+      that resolution of {\tt NS} over {\tt S}.  From the source side it reads
+      only the lowest shift of a free presentation, so {\tt "sourceResolution"}
+      is the free cover alone, asked for with {\tt LengthLimit => 0}; it is not
+      a computed tail of a resolution of {\tt M}, and over $R$ there would in
+      general be no finite one to compute.
+    Text
       The diagonal of $\mathbb{P}^1\times\mathbb{P}^1$, with $M=N=R$:
     Example
       S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
@@ -1246,7 +1654,14 @@ Node
     Text
       A shifted source is a genuinely different $M$, and the lower shift of its
       $R$-free presentation moves the certified truncation corner, as
-      Proposition 4.2 says it should:
+      Proposition 4.2 says it should.  The bound is the target part minus the
+      source part, and the source part is the least shift appearing in the free
+      cover.  Macaulay2 writes $R^{\{\{1,1\}\}}$ for the free module whose
+      generator sits in degree $(-1,-1)$ --- the superscript is the twist, so
+      the sign is opposite to the degree --- and its free cover therefore has
+      least shift $(-1,-1)$.  Subtracting that adds $(1,1)$, so the bound
+      should come out one higher in each coordinate than the $(0,0)$-shifted
+      one above:
     Example
       shiftData = bigradedGlobalHomData(S, R^{{1,1}}, R^1, NS);
       shiftData#"bound"
@@ -1274,9 +1689,15 @@ Node
       @TO blockDegreeData@ reads off the ambient ring; and Lemma 5.2, the
       evaluation that gives the strand its multiplication, which is
       @TO evaluateSteinGenerators@.
+
+      The link is to v2 deliberately.  Every number quoted above is a number in
+      v2, and a later version may renumber them; the versionless record is at
+      @HREF{"https://arxiv.org/abs/2603.13703","arXiv:2603.13703"}@ and is the
+      one to cite for the mathematics.
     Text
       Smith, G. G. (2000).  {\em Computing global extension modules}.  Journal
-      of Symbolic Computation {\bf 29}(4), 729--746.
+      of Symbolic Computation {\bf 29}(4--5), 729--746.
+      @HREF{"https://doi.org/10.1006/jsco.1999.0399","doi:10.1006/jsco.1999.0399"}@
 
       The monograded computation of global extension modules that the bigraded
       construction here extends.  What the bigrading buys is the ability to
@@ -1284,8 +1705,11 @@ Node
       $(0,\ge0)$-strand --- and with it the section ring of the Stein
       intermediate --- something one can ask a computer for.
     Text
-      The Stacks Project Authors.  {\em Stein factorization}.
-      @HREF{"https://stacks.math.columbia.edu/","stacks.math.columbia.edu"}@
+      The Stacks Project Authors.  {\em Stein factorization}, Section 37.53.
+      @HREF{"https://stacks.math.columbia.edu/tag/03GX","Tag 03GX"}@
 
       The definition and the basic properties, in the generality of schemes.
+      Theorem 37.53.4 is the statement in the Noetherian case, and it is where
+      the fibres of $h$ are said to be geometrically connected rather than
+      merely connected.
 ///

@@ -1,5 +1,14 @@
 needsPackage("SteinFactorization", FileName => "SteinFactorization.m2");
 
+-- run-tests.sh passes --stop, which sets stopIfError and stops `try` from
+-- catching anything.  The error-path checks below turn it off for the one call.
+errorsOut = f -> (
+    stopIfError = false;
+    r := try (f(); false) else true;
+    stopIfError = true;
+    r
+    );
+
 -- Test 1: identity P^1 -> P^1.
 s1 = QQ[y0,y1,x0,x1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
 iid = ideal(y0*x1-y1*x0);
@@ -93,7 +102,9 @@ zeroSourceIdeal = ideal(0_sourceP1);
 graphCertificate = certifiedHomogeneousGraph(
     sourceP1,zeroSourceIdeal,{r1^3,r0*r1^2,r0^2*r1,r0^3});
 assert(graphCertificate#"basePointFree");
-assert(graphCertificate#"projectionIsomorphismCertified");
+-- Not a check that was run: the graph of a morphism projects isomorphically to
+-- its source whatever the morphism, once basePointFree says there is one.
+assert(graphCertificate#"projectionIsomorphismByConstruction");
 selectedGraphIndex = selectCertifiedGraphComponent(
     graphCertificate,{graphCertificate#"graphIdeal"});
 assert(selectedGraphIndex == 0);
@@ -166,10 +177,15 @@ gd = gd0/ideal(qd1-rgd,qd2-rgd^2,qd3-rgd^3);
 fd = map(gd,ad,{rgd,wgd});
 igd = map(ad,gd,{rd,wd,rd,rd^2,rd^3});
 
-mixedChartCertificate = certifyChartwiseProjectionIsomorphism(
+mixedChartCertificate = checkChartwiseInverses(
     bseg,{ya,yb,yc,yd},{{fa,iga},{fb,igb},{fc,igc},{fd,igd}});
-assert(mixedChartCertificate#"projectionIsomorphismCertified");
+assert(mixedChartCertificate#"coverCertified");
+assert(all(mixedChartCertificate#"localIsomorphismsCertified",b -> b));
 assert(mixedChartCertificate#"numberOfCharts" == 4);
+-- One map pair per cover element, and a mismatched count is rejected rather
+-- than silently paired off against the first few charts.
+assert(errorsOut(() -> checkChartwiseInverses(
+    bseg,{ya,yb,yc,yd},{{fa,iga},{fb,igb}})));
 
 -- Test 5: P^2 -> P^2, [s:t:u] |-> [s^2:t^2:u^2].
 -- The Stein intermediate is P^2 in its quadratic Veronese embedding in P^5.
@@ -218,6 +234,30 @@ assert(isPrime(cp2c#"definingIdeal"));
 gp2c = directSteinGraph(dp2c,cp2c);
 assert(isPrime(gp2c#"graphIdeal"));
 
+-- Test 8: inputs that are meant to correspond, and do not.  None of these is a
+-- mathematical claim; they are the places where a wrong argument used to reach
+-- the computation and fail there, or not fail at all.
+use s1;
+assert(errorsOut(() -> steinHomDataAtBound(s1,isq,{1})));
+assert(errorsOut(() -> steinCoordinateAlgebra(dsq,99)));
+assert(errorsOut(() -> evaluateSteinGenerators(dsq,99)));
+-- Two runs give one comparison, so two agreements cannot be reached.
+assert(errorsOut(() -> steinDataByStabilization(s1,isq,{1,0},2,2,2)));
+assert(errorsOut(() -> steinDataByStabilization(s1,isq,{1,0},3,1,-1)));
+-- Algebra data from one graph, hom data from another.
+assert(errorsOut(() -> directSteinGraph(did,steinCoordinateAlgebra dsq)));
+-- A candidate that is not an ideal of the certified product ring.
+foreignRing = QQ[foreign0,foreign1];
+assert(errorsOut(() ->
+    selectCertifiedGraphComponent(graphCertificate,{ideal(foreign0)})));
+-- The one-argument form takes the first generator, which is what every call
+-- above passes explicitly, so the two must agree.  Each call builds its own
+-- polynomial ring, so the comparison goes through sub rather than ==.
+defaultAlgebra = steinCoordinateAlgebra dsq;
+explicitAlgebra = steinCoordinateAlgebra(dsq,0);
+assert(sub(defaultAlgebra#"definingIdeal",explicitAlgebra#"polynomialRing")
+    == explicitAlgebra#"definingIdeal");
+
 print("OK identity: C has one generator over the target data.");
 print("OK square map: C is the plane conic X0*X1=z^2.");
 print("OK cubic map: C is the twisted cubic.");
@@ -228,3 +268,4 @@ print("OK mixed graph: four affine charts glue and projection Gamma_h -> Y is an
 print("OK P2 square map: Stein ring is the degree-4 Veronese surface (6 quadrics in P5).");
 print("OK P2 direct graph: localized Hom construction gives a prime graph closure.");
 print("OK P2 cube map: third-Veronese Hilbert values H(1)=10, H(2)=28; ring and graph are prime.");
+print("OK validation: mismatched bounds, indices, tables and candidates are rejected.");

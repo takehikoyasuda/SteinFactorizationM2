@@ -79,8 +79,12 @@ cFromGraph = steinCoordinateAlgebra(dFromGraph,0);
 assert(apply({1,2,3},n -> hilbertFunction(n,cFromGraph#"ring")) == {2,3,4});
 
 -- Test 5: a weighted target.  A morphism to P(a_0,...,a_n) is cut out by forms
--- with deg(h_i) = a_i*e for one common e; (r0,r1^2) with weights (1,2) is the
--- isomorphism P^1 -> P(1,2).
+-- with deg(h_i) = a_i*e for one common e; (r0,r1^2) with weights (1,2) is such
+-- a morphism P^1 -> P(1,2), of degree two.  It is not an isomorphism, and no
+-- map of this shape is: on y0 != 0 the coordinate of P(1,2) is u = y1/y0^2, so
+-- the composite with P(1,2) = P^1, [y0:y1] -> [y0^2:y1], is [r0^2:r1^2].
+-- Proportional degrees make the map well defined and say nothing more.  What
+-- the assertions below check is the graph construction, not the degree.
 sourceStd = QQ[r0,r1];
 gWtTarget = certifiedWeightedGraph(sourceStd,ideal(0_sourceStd),{r0,r1^2},{1,2});
 assert(gWtTarget#"basePointFree");
