@@ -556,29 +556,32 @@ Node
     Text
       For a sufficiently large bidegree $\mathbf{r}=(r_1,r_2)$ this computes
       $$C=\operatorname{Hom}_R(R_{\ge\mathbf{r}},R)_{(0,\ge0)}.$$
-      The truncation bound is obtained from shifts in a bounded bigraded free
-      resolution of $R$ over the ambient polynomial ring.  This is the
-      computational counterpart of the bound in Corollary 4.3 of
+      The truncation bound $\mathbf{r}$ is obtained from shifts in a bounded
+      bigraded free resolution of $R$ over the ambient polynomial ring.  This
+      is the computational counterpart of the bound in Corollary 4.3 of
       @TO2 {"Bibliography", "Yasuda (2026)"}@.
 
-      Those two arguments are all that is needed.  Corollary 4.3 is stated in
-      terms of the dimensions $d_s$ of the two ambient projective spaces and
-      the sums $c_s$ of the degrees of the variables in each block, but the
-      degrees of {\tt S} already determine all four, so they are computed
-      rather than passed; see @TO blockDegreeData@.
+    --   Those two arguments are all that is needed.  Corollary 4.3 is stated in
+    --   terms of the dimensions $d_s$ of the two ambient projective spaces and
+    --   the sums $c_s$ of the degrees of the variables in each block, but the
+    --   degrees of {\tt S} already determine all four, so they are computed
+    --   rather than passed; see @TO blockDegreeData@.
     Text
-      The finite square map $[s:t]\mapsto[s^2:t^2]$ of $\mathbb{P}^1$.  Its
-      graph is cut out by one bihomogeneous equation:
+      Consider the finite square map $[s:t]\mapsto[s^2:t^2]$ of
+      $\mathbb{P}^1$.  Its graph is cut out by one bihomogeneous equation:
     Example
       S = QQ[y0,y1,x0,x1, Degrees => {{1,0},{1,0},{0,1},{0,1}}];
       Igraph = ideal(y0^2*x1 - y1^2*x0);
       homData = steinHomData(S, Igraph);
     Text
-      The computed bound and the degrees of the generators of the
-      $(0,\ge0)$-strand:
+      The computed bound, and whether it is certified --- that is, whether it
+      was read off a resolution rather than supplied by hand:
     Example
       homData#"bound"
       homData#"certifiedBound"
+    Text
+      The degrees of the generators of the $(0,\ge0)$-strand:
+    Example
       homData#"steinGeneratorDegrees"
     Text
       There are two strand generators: the unit in bidegree $(0,0)$, and one
