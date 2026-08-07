@@ -4,6 +4,13 @@ Macaulay2 prototype for the Stein factorization algorithm in Takehiko Yasuda,
 *An algorithm for the minimal model program in dimension three*, §4–§5 and
 Algorithm 1 ([arXiv:2603.13703v2](https://arxiv.org/abs/2603.13703v2)).
 
+> **Development warning (7 August 2026).**  The graph-recovery stage is paused
+> pending a mathematical revision.  The current `directSteinGraph` uses an
+> incorrect bigrading and must not be interpreted as computing the graph of
+> the connected-fiber morphism.  The tests that it is prime and homogeneous do
+> not detect this dimension error.  See [PROJECT-STATUS.md](PROJECT-STATUS.md)
+> before using the package.
+
 The project computes the bigraded Hom module
 
 ```text
@@ -11,8 +18,9 @@ C = Hom_R(R_{>=r},R)_(0,>=0),
 ```
 
 constructs its finite presentation over the target coordinate ring `A`,
-recovers a graded coordinate algebra for the Stein intermediate, and can build
-the connected-fiber graph directly from evaluated Hom generators.
+and recovers a graded coordinate algebra for the Stein intermediate.  Code for
+recovering the connected-fiber graph is currently experimental and is not part
+of the trusted workflow.
 
 ## Requirements
 
