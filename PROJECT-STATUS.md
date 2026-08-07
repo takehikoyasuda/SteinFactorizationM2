@@ -1,0 +1,115 @@
+# SteinFactorizationM2 作業中断時の状態記録
+
+記録日：2026年8月7日
+
+作業ブランチ：`codex/manual-revision-independent`
+
+## 現在の判断
+
+マニュアルの修正前、Claude版、ChatGPT版の比較は一旦中止し、保留とする。
+文章については、全体として簡潔なChatGPT版を今後の主案とする。ただし、
+グラフ復元段階に重大な数学的問題が見つかったため、このブランチを最終版として
+mainへマージしない。
+
+論文側で正しいグラフ復元アルゴリズムを確定することを先行させ、その後にコード、
+テスト、マニュアルを一緒に改訂する。
+
+## 比較対象として保存した版
+
+| 版 | コミット | 用途 |
+| --- | --- | --- |
+| 修正前 | `b2435e9` | 三版比較の共通出発点 |
+| Claude版 | `91db3ea` | 詳細な説明と回帰テストを重視した案 |
+| ChatGPT版 | `c1355b8` | 簡潔な説明、控えめな命名、入力検証を重視した主案 |
+
+ローカルの比較用worktreeは
+`/Users/highernash/Developer/SteinFactorizationM2-comparison/` 以下にあり、各版の
+HTMLマニュアルも生成済みである。worktreeは固定コミットを指す閲覧用であり、
+今後の編集場所ではない。
+
+## 発見された重大問題
+
+現在の `directSteinGraph` は、元のtarget \(X\) の座標と、新しいStein中間項
+\(Z\) の座標を同じ第二次数ブロックに入れている。そのため両座標の相対的な
+射影スカラーが余分なパラメータとして残り、現在の二重次数で解釈した出力は
+\(h:Y\to Z\) のグラフではない。
+
+恒等写像、二乗写像、三乗写像で確認すると、入力グラフ環のKrull次元が3である
+のに対し、`directSteinGraph` の出力環はすべて次元4となった。誤った出力も素かつ
+斉次なので、従来の `isPrime` と `isHomogeneous` のテストは通ってしまう。
+
+したがって、現在の `directSteinGraph` は利用してはならず、READMEとマニュアルの
+「グラフを直接構成する」という記述も未修正の既知問題として扱う。
+
+## 現時点での機能範囲
+
+現在の作業成果は、主に次の段階までの研究用プロトタイプとして保存する。
+
+- Corollary 4.3に基づくbigraded Hom計算。
+- Stein中間項の候補となるgraded coordinate algebra \(C\) の計算。
+- 有限射 \(g:Z\to X\) を与えるgraded algebra mapの計算。
+
+これらについても最終的な数学的・人的検証が完了したという意味ではない。
+特にsuppliedまたはheuristic boundを使った出力は、そのboundが十分大きいことを
+別に確認しなければならない。
+
+次は現在の信頼できるメイン経路に含めない。
+
+- `directSteinGraph`：現在のbigradingでは既知の誤りがある。
+- `selectCertifiedGraphComponent`：候補を生成せず、既知のグラフと比較するだけ
+  なので、論文Algorithm 1のcomponent選択を実装していない。
+- `checkChartwiseInverses`：与えられた被覆と環写像の算術的確認に限られ、
+  グラフ射影の同型を証明しない。
+
+## 論文側で検討する修正案
+
+Lemma 5.2の埋め込み \(C\hookrightarrow R_\gamma\) を使い、元の \(X\) 座標を
+出力環から除いて
+
+\[
+k[y_0,\ldots,y_n,z_0,\ldots,z_N]\longrightarrow R_\gamma[t],
+\qquad
+y_j\longmapsto\bar y_j,\quad z_i\longmapsto c_i t^{\deg c_i}
+\]
+
+のkernelを取る直接方式を検討する。\(y\) と \(z\) は独立の二つの次数ブロックに
+置く。恒等写像、二乗写像、三乗写像の試験では、この修正版は期待されるKrull
+次元を返し、二重斉次となった。
+
+詳細な命題・証明案は `PAPER-REVISION-DIRECT-GRAPH.md` に保存した。この案は
+論文改訂プロジェクトで精査し、正しさが確定してからMacaulay2へ戻す。
+
+## 論文本来のアルゴリズムについて
+
+現論文のAlgorithm 1は、fiber productの成分を計算し、\(Y\) への射影が同型な
+成分を選ぶことで \(\Gamma_h\) を求める。数学的にはグラフを得るのに十分だが、
+このパッケージには現在、候補成分の生成と本物の射影同型判定が実装されていない。
+
+実装した場合は、fiber-product ideal、radical、minimal-prime decomposition、
+各成分の同型判定が必要になる。特に成分分解は大きな例で非常に高価になる可能性
+がある。実測比較は未実施である。
+
+将来は次の二方式を用意するのが望ましい。
+
+1. 修正直接方式：通常利用を想定した高速候補。
+2. 論文Algorithm 1方式：小さい例で使う低速な参照・検証実装。
+
+## 再開時の作業順序
+
+1. 論文改訂プロジェクトで、修正直接方式の命題、scheme-theoretic closure、
+   weighted/non-standard gradingの扱いを確定する。
+2. 現在の `directSteinGraph` を公開APIから外すか、削除する。
+3. 修正方式を一旦privateまたはexperimentalな関数として実装する。
+4. 次元、source/target elimination、第一射影の同型、\(g\circ h=f\)、異なる
+   \(\gamma\) による結果の一致をテストする。
+5. 論文方式を小さい例用の参照実装として追加し、修正直接方式と比較する。
+6. 数学的確認とテストが完了してから公開APIに昇格する。
+7. ChatGPT版を文章の土台としてマニュアル比較を再開し、Claude版の有益な詳細と
+   回帰テストを選択的に統合する。
+
+## この時点では行わないこと
+
+- 現在の修正版をmainへマージしない。
+- `directSteinGraph` の出力を正しいグラフとして論文や計算結果に使わない。
+- 三版比較の空欄を無理に埋めない。
+- 数学的方針が確定する前にAPIをさらに固定しない。

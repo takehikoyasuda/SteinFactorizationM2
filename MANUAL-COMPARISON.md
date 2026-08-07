@@ -1,43 +1,160 @@
-# Manual revision comparison
+# マニュアル修正版の比較
 
-This document records a three-way comparison of the original manual, the
-Claude revision, and the independent ChatGPT revision.  The comparison should
-judge each change against the original rather than treating either revision as
-the default winner.
+## 作業状態：保留
 
-## Frozen comparison snapshots
+2026年8月7日、三版の比較作業をここで中止し、意図的に保留とした。全体としては
+ChatGPT版の簡潔な説明を今後の主案とする予定である。ただし、グラフ復元
+アルゴリズムに先に解決すべき数学的問題が見つかったため、現時点ではどの版も
+最終版として採用またはマージしない。
 
-The comparison worktrees are detached at the following commits.  They are
-intended for inspection and rebuilding documentation, not for editing.
+比較を再開するのは、正しいグラフ復元アルゴリズムが論文側で確定し、Macaulay2
+実装とテストに反映された後とする。現在の判断と再開手順は
+`PROJECT-STATUS.md` に記録している。
 
-| Version | Commit | Local worktree | Rendered manual |
+この文書は、修正前、Claude版、ChatGPT版の三者を比較し、最終統合版で何を
+採用するかを記録するためのものである。Claude版またはChatGPT版のどちらかを
+最初から正解とせず、それぞれを修正前と比較したうえで判断する。
+
+## 比較対象（固定スナップショット）
+
+比較用worktreeは次のコミットに固定されている。閲覧とマニュアルの再生成に使い、
+ここでは編集しない。最終版の編集は通常の作業フォルダで行う。
+
+| 版 | コミット | 比較用worktree | 生成済みマニュアル |
 | --- | --- | --- | --- |
-| Before revision | `b2435e9` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/before` | [Open HTML manual](</Users/highernash/Developer/SteinFactorizationM2-comparison/before/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
-| Claude revision | `91db3ea` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/claude` | [Open HTML manual](</Users/highernash/Developer/SteinFactorizationM2-comparison/claude/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
-| ChatGPT revision | `c1355b8` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/chatgpt` | [Open HTML manual](</Users/highernash/Developer/SteinFactorizationM2-comparison/chatgpt/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
+| 修正前 | `b2435e9` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/before` | [HTMLを開く](</Users/highernash/Developer/SteinFactorizationM2-comparison/before/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
+| Claude版 | `91db3ea` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/claude` | [HTMLを開く](</Users/highernash/Developer/SteinFactorizationM2-comparison/claude/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
+| ChatGPT版 | `c1355b8` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/chatgpt` | [HTMLを開く](</Users/highernash/Developer/SteinFactorizationM2-comparison/chatgpt/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
 
-All three manuals were regenerated successfully with Macaulay2 1.26.06.  The
-original version emitted only the pre-existing citation-metadata warning.
+三版ともMacaulay2 1.26.06でHTMLを再生成できた。修正前だけは、既知の引用情報
+不足の警告を出すが、例の実行は成功している。再生成する場合は、対象worktreeで
+`make docs-all` を実行する。
 
-To rebuild one snapshot, run `make docs-all` in its worktree.  Because each
-snapshot is detached at a fixed commit, later branch changes do not silently
-alter this comparison.
+## 三版の違いの概要
 
-## Comparison procedure
+### 修正前
 
-Use all three views below.  A direct Claude-versus-ChatGPT diff alone does not
-show whether one revision unnecessarily changed sound original material.
+アルゴリズムと高度な例は既にかなり説明されている一方、次の二点が特に重要な
+問題だった。
 
-1. Read the three rendered HTML pages side by side, beginning with the package
-   overview and then following the functions in a normal user's workflow.
-2. Inspect `b2435e9..91db3ea` to identify Claude's changes from the original.
-3. Inspect `b2435e9..c1355b8` to identify ChatGPT's changes from the original.
-4. Inspect `91db3ea..c1355b8` only after the first two comparisons, to isolate
-   disagreements between the revisions.
-5. Run equivalent examples and tests whenever a difference affects behavior,
-   an accepted input, a return value, or a mathematical claim.
+- `certifyChartwiseProjectionIsomorphism` は、利用者が与えた被覆と環準同型の
+  逆写像関係を調べるだけなのに、グラフ射影の同型を証明するかのような名前と
+  戻り値になっていた。
+- 重み付き射影空間の例で、次数2の射を同型と説明していた。
 
-Useful commands from the main repository are:
+また、パッケージの入口に一連の使用例がなく、戻り値の説明、入力検証、
+`steinCoordinateAlgebra` の標準的な呼び方などに改善の余地があった。
+
+### Claude版
+
+修正前から653行追加、153行削除（全対象ファイルの合計）。二つの重大な問題を
+修正し、背景、仮定、戻り値、注意点をかなり詳しく説明する方針である。
+
+- 問題のある補助関数を `checkChartwiseInverses` に改名した。
+- `steinCoordinateAlgebra homData` という一引数の標準形を追加した。
+- パッケージの入口に三段階の実行例を置いた。
+- 主要関数の戻り値や内部データを詳しく説明した。
+- 入力検証と回帰テストを追加し、エラーメッセージにも具体的な数値を含めた。
+- 公開APIを変更しているが、パッケージのバージョンは `0.1` のままである。
+
+長所は説明とテストが充実していることである。一方、マニュアルが長くなり、
+初めて使う人に必要な情報と、実装を深く調べる人向けの情報が同じページに多く
+載る箇所がある。
+
+### ChatGPT版
+
+修正前から337行追加、157行削除（全対象ファイルの合計）。Claude版と同じ重大な
+問題を直しつつ、通常の利用に必要な説明を優先して短くまとめる方針である。
+
+- 補助関数を `checkChartwiseInverses` に改名し、戻り値も
+  `coverVerified` と `inversePairChecks` にして、証明していない性質を
+  `certified` と呼ばないようにした。
+- 一引数の `steinCoordinateAlgebra homData` を標準形とし、二引数形も残した。
+- 環の所属、重みが正整数であること、チャート対の形、指定boundでも二重次数の
+  規約を満たすことなど、公開関数の境界で行う検証を追加した。
+- `algebraData` に元の `homData` を記録し、別計算のデータを
+  `directSteinGraph` に混ぜた場合を明示的に拒否する。
+- 公開APIの変更を破壊的変更と見て、バージョンを `0.2` に上げた。
+- 説明は「主要な戻り値」と通常のワークフローを中心にし、内部キーの詳説を
+  抑えた。
+
+長所は、保証している内容と名前の一致、入力境界の明確さ、全体の簡潔さである。
+一方、Claude版にある詳しい背景説明や一部の回帰テストは省かれている。
+
+### 両修正版に共通する改善
+
+Claude版とChatGPT版は独立した修正だが、重要な方向はかなり一致している。
+
+- 過大な「証明済み」という主張をやめる。
+- 重み付き射影空間の例を次数2の射として訂正する。
+- パッケージの入口に、Homデータ、座標環、グラフを得る三段階の例を置く。
+- `steinCoordinateAlgebra` の評価元の添字を通常は省略できるようにする。
+- 戻り値、仮定、certified boundとheuristic boundの違いを説明する。
+- README、技術文書、コード、テストの用語を揃える。
+
+したがって最終版は、どちらかを丸ごと選ぶよりも、ChatGPT版の控えめな命名、
+入力検証、簡潔な導線を土台に、Claude版の有益な詳細説明と回帰テストを選んで
+加える形が有力である。ただし、これは比較開始時点の見通しであり、個々の採否は
+下の判断記録で決める。
+
+なお、この見通しはグラフ復元アルゴリズムの問題を発見する前の文章評価に基づく。
+`directSteinGraph` およびそれに依存する説明は、三版とも再検討が必要である。
+
+## 比較するときに特に注目すべき点
+
+1. **「certified」が指す範囲**
+
+   グラフを構成したこと、被覆を確認したこと、局所的な環写像が互いに逆である
+   こと、グラフ射影が同型であることは別々の主張である。関数名、キー名、説明が
+   実際に検査した性質を越えていないかを最優先で確認する。
+
+2. **公開APIとバージョン**
+
+   補助関数名と戻り値キーは両版でも異なる。既存利用者への互換性を残すか、
+   明確さを優先して変更するか、またその場合に `0.2` とするかを決める。
+
+3. **説明の詳しさ**
+
+   Claude版は戻り値と理論的背景が詳しく、ChatGPT版は主要結果を探しやすい。
+   単純に長い方または短い方を選ばず、概要ページ、各関数ページ、技術文書の
+   どこに詳細を置くべきかで判断する。
+
+4. **入力データの対応関係**
+
+   `directSteinGraph` に渡す二つのテーブルが同じ計算から作られたことを、
+   Claude版は局所化環の係数環から確認し、ChatGPT版は元の `homData` 自体を
+   保存して確認する。堅牢性、内部表現への依存、将来の拡張性を比較する。
+
+5. **入力検証とエラーメッセージ**
+
+   ChatGPT版は検証対象がやや広く、Claude版は一部のエラー説明がより具体的で
+   ある。検証が高価すぎないか、正しい入力を拒否しないか、各検証にテストが
+   あるかを確認する。
+
+6. **例の数学的な読み方**
+
+   特に重み付き射影空間、twisted cubic、section ringが与える埋め込みを確認
+   する。「同じ抽象多様体」と「同じ射影埋め込み」、「射が定義できる」と
+   「同型である」を区別しているかを見る。
+
+7. **テストの網羅性**
+
+   Claude版には、チャート数の不一致、一引数形と二引数形の一致など、ChatGPT版
+   より多い回帰テストがある。ChatGPT版で追加された検証にも未テストの経路が
+   あるため、最終版では両方の有効なテストを統合する余地がある。
+
+## 比較手順
+
+Claude版とChatGPT版の直接差分だけを見ると、元の正しい記述まで変更されたかを
+判断しにくい。次の順番で比較する。
+
+1. 三つのHTMLを別タブで開き、パッケージ概要から通常の利用順に読む。
+2. `b2435e9..91db3ea` で、修正前からClaude版への変更を見る。
+3. `b2435e9..c1355b8` で、修正前からChatGPT版への変更を見る。
+4. 最後に `91db3ea..c1355b8` で、両修正版の判断が違う箇所を抽出する。
+5. 動作、入力、戻り値、数学的主張が変わる箇所は、同じ例とテストで確認する。
+
+メインのリポジトリから使える基本的な差分表示は次のとおりである。
 
 ```text
 git diff b2435e9..91db3ea -- SteinFactorization.m2
@@ -45,81 +162,63 @@ git diff b2435e9..c1355b8 -- SteinFactorization.m2
 git diff 91db3ea..c1355b8 -- SteinFactorization.m2
 ```
 
-Use the same form with `README.md`, `IMPLEMENTATION.tex`, or `tests/` to narrow
-the comparison.  `git diff --word-diff` is useful for prose-heavy passages.
+対象を `README.md`、`IMPLEMENTATION.tex`、`tests/` に変えれば個別に比較できる。
+文章だけを細かく比べる場合は `git diff --word-diff` が便利である。
 
-## Decision labels
+## 採否ラベル
 
-Give every substantive disagreement one of these labels:
+実質的な相違点には、次のいずれかを付ける。
 
-- **Claude**: adopt Claude's version.
-- **ChatGPT**: adopt ChatGPT's version.
-- **Combine**: retain complementary parts of both revisions.
-- **Original**: neither revision improves the original.
-- **Rewrite**: all three versions need a new solution.
-- **Defer**: a mathematical or compatibility decision is still required.
+- **Claude**：Claude版を採用する。
+- **ChatGPT**：ChatGPT版を採用する。
+- **統合**：両版の長所を組み合わせる。
+- **修正前**：どちらの変更も修正前を改善していない。
+- **再修正**：三版とも採用せず、新しく書き直す。
+- **保留**：数学的判断または互換性の判断が必要である。
 
-Do not decide by prose length alone.  Prefer the shortest explanation that is
-mathematically correct, states the actual guarantee of the implementation, and
-gives the reader enough information to use the function safely.
+文章量だけで決めない。数学的に正しく、実装が本当に保証する範囲を述べ、利用者が
+安全に使うために必要な情報を含む、最も短い説明を優先する。
 
-## Overall comparison
+## 全体評価表
 
-| Area | Original | Claude | ChatGPT | Preferred result | Reason |
+| 評価項目 | 修正前 | Claude版 | ChatGPT版 | 採用方針 | 理由 |
 | --- | --- | --- | --- | --- | --- |
-| Mathematical accuracy |  |  |  |  |  |
-| Package overview and workflow |  |  |  |  |  |
-| Public API and naming |  |  |  |  |  |
-| Return-value documentation |  |  |  |  |  |
-| Preconditions and error messages |  |  |  |  |  |
-| Examples |  |  |  |  |  |
-| Readability and concision |  |  |  |  |  |
-| Backward compatibility |  |  |  |  |  |
-| Tests |  |  |  |  |  |
-| README and implementation note |  |  |  |  |  |
+| 数学的な正確さ |  |  |  |  |  |
+| パッケージ概要と導線 |  |  |  |  |  |
+| 公開APIと命名 |  |  |  |  |  |
+| 戻り値の説明 |  |  |  |  |  |
+| 前提条件とエラー |  |  |  |  |  |
+| 例 |  |  |  |  |  |
+| 読みやすさと簡潔さ |  |  |  |  |  |
+| 後方互換性 |  |  |  |  |  |
+| テスト |  |  |  |  |  |
+| READMEと技術文書 |  |  |  |  |  |
 
-## Detailed decisions
+## 個別判断の記録
 
-Copy the following block for each substantive difference.  Keep API changes,
-mathematical corrections, and editorial changes as separate entries even when
-they occur in the same paragraph.
+実質的な相違点ごとに次の雛形を複製する。同じ段落に現れる変更でも、API変更、
+数学的訂正、文章上の変更は分けて記録する。
 
-### C-001: Short description
+### C-001：短い項目名
 
-- **Location:** function or document section
-- **Category:** correctness / API / validation / example / exposition / test
-- **Original:** summary of the original behavior or wording
-- **Claude:** summary of Claude's change and stated rationale
-- **ChatGPT:** summary of ChatGPT's change and rationale
-- **Evidence:** rendered output, source lines, test result, or mathematical fact
-- **Decision:** Claude / ChatGPT / Combine / Original / Rewrite / Defer
-- **Reason:** why this choice best serves users
-- **Final action:** exact change needed in the eventual integration branch
+- **場所：** 関数名または文書の節
+- **分類：** 正確性／API／入力検証／例／説明／テスト
+- **修正前：** 元の動作または記述の要約
+- **Claude版：** 変更内容と、その修正計画に書かれた理由
+- **ChatGPT版：** 変更内容と理由
+- **根拠：** HTML、ソース行、テスト結果、数学的事実など
+- **判断：** Claude／ChatGPT／統合／修正前／再修正／保留
+- **理由：** なぜその選択が利用者にとって最良か
+- **最終作業：** 統合ブランチで実施する具体的変更
 
-## Questions requiring special attention
+## 最終統合チェックリスト
 
-The following topics can change package behavior or user expectations and
-should not be settled as ordinary copy editing.
-
-- Does each use of “certified” name exactly the property that is checked?
-- Should `checkChartwiseInverses` be public, private, or removed?
-- Which return-table keys constitute supported public API?
-- Is the one-argument form of `steinCoordinateAlgebra` preferable, and should
-  the two-argument form remain for compatibility?
-- Which validation failures should produce explicit errors?
-- Do the weighted-projective and twisted-cubic examples state the correct
-  grading, morphism, image, and degree?
-- Which names are mathematical conventions worth retaining, even if short?
-- Are implementation details being presented as mathematical guarantees?
-
-## Final integration checklist
-
-- [ ] Every entry in the detailed decision log has a disposition.
-- [ ] Mathematical claims have been checked independently of prose quality.
-- [ ] Public names, signatures, return keys, examples, and tests agree.
-- [ ] The package overview describes one coherent user workflow.
-- [ ] All documentation examples run without errors.
-- [ ] Standard, weighted, and twisted-cubic tests pass.
-- [ ] README and `IMPLEMENTATION.tex` match the final implementation.
-- [ ] The final HTML manual has been read in rendered form.
-- [ ] Breaking changes and compatibility decisions are recorded explicitly.
+- [ ] 個別判断の全項目に採否が付いている。
+- [ ] 文章の読みやすさとは独立に、数学的主張を確認した。
+- [ ] 公開名、引数、戻り値キー、例、テストが一致している。
+- [ ] パッケージ概要から一つの明確な利用手順をたどれる。
+- [ ] 全マニュアル例がエラーなく実行できる。
+- [ ] 標準例、重み付き例、twisted-cubic例のテストが通る。
+- [ ] READMEと `IMPLEMENTATION.tex` が最終実装に一致している。
+- [ ] 生成後のHTMLを実際に読んで確認した。
+- [ ] 破壊的変更と互換性の判断が明記されている。
