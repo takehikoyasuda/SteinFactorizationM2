@@ -39,6 +39,7 @@ assert(isPrime jc);
 gh = directSteinGraph(d,c);
 assert(isHomogeneous(gh#"graphIdeal"));
 assert(isPrime(gh#"graphIdeal"));
+assert(dim(gh#"jointRing"/gh#"graphIdeal") == dim d#"ring");
 
 -- Independently verify the exceptional divisor of h.
 ssource = QQ[q00,q01,q10,q11,q20,q21,q30,q31,

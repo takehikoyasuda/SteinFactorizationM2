@@ -4,12 +4,12 @@ Macaulay2 prototype for the Stein factorization algorithm in Takehiko Yasuda,
 *An algorithm for the minimal model program in dimension three*, §4–§5 and
 Algorithm 1 ([arXiv:2603.13703v2](https://arxiv.org/abs/2603.13703v2)).
 
-> **Development warning (7 August 2026).**  The graph-recovery stage is paused
-> pending a mathematical revision.  The current `directSteinGraph` uses an
-> incorrect bigrading and must not be interpreted as computing the graph of
-> the connected-fiber morphism.  The tests that it is prime and homogeneous do
-> not detect this dimension error.  See [PROJECT-STATUS.md](PROJECT-STATUS.md)
-> before using the package.
+> **Development status (12 August 2026).**  `directSteinGraph` now follows the
+> revised kernel construction in the paper: it uses the source coordinates and
+> the Stein coordinates, but omits the original target coordinates from the
+> output ring.  Dimension regressions cover the error described in
+> [PROJECT-STATUS.md](PROJECT-STATUS.md).  The package remains a research
+> prototype and has not received a complete independent mathematical review.
 
 The project computes the bigraded Hom module
 
@@ -18,9 +18,9 @@ C = Hom_R(R_{>=r},R)_(0,>=0),
 ```
 
 constructs its finite presentation over the target coordinate ring `A`,
-and recovers a graded coordinate algebra for the Stein intermediate.  Code for
-recovering the connected-fiber graph is currently experimental and is not part
-of the trusted workflow.
+recovers a graded coordinate algebra for the Stein intermediate, and computes
+the graph of the connected-fiber morphism by a kernel in the localization used
+for the coordinate-algebra embedding.
 
 ## Requirements
 
@@ -151,7 +151,8 @@ Implemented:
 - multigraded orthant truncation;
 - finite `(0,>=0)`-strand presentation over `A` using `pushForward`;
 - coordinate-algebra reconstruction via Lemma 5.2;
-- direct graph closure through localization and a weighted Rees parameter;
+- direct graph closure through the revised source--Stein kernel in the
+  localization;
 - regression examples with finite, fiber-type, and divisorial contractions;
 - weighted projective input, in `tests/weighted.m2`. Only the split into a
   source block of degrees `(positive,0)` and a target block of degrees

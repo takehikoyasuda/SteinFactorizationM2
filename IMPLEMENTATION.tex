@@ -232,34 +232,17 @@ elements \(c_0,\dots,c_N\) of \(C\), homogeneous of bidegrees
 % realized concretely inside \(R[1/\gamma]\), which is where the
 % computation runs.
 
-Each \(c_i\) becomes a homogeneous coordinate \(z_i\) on \(Z\), carrying
-the bidegree of the \(c_i\) it stands for:
-\[J=S[z_0,\dots,z_N],\qquad \deg z_i=(0,b_i).\]
-The map to take the kernel of is
-\[\Phi\colon J\longrightarrow R[1/\gamma][t],\qquad
-\Phi(x)=\bar x\quad(x\text{ a variable of }S),\qquad
-\Phi(z_i)=c_i\,t^{b_i}.\]
-Each variable \(x\) of \(S\) goes to its class \(\bar x\) in
-\(R=S/I_{\Gamma_f}\), taken inside \(R[1/\gamma]\); that is all the first
-half of the map does. The graph of \(h\colon Y\to Z\) is \(\ker\Phi\), a
-bihomogeneous ideal of \(J\), and \(J\) is the coordinate ring of the
-product of the two spaces containing \(\Gamma_f\) with the weighted
-projective space in which the \(z_i\) place \(Z\). It is weighted exactly
-when the \(b_i\) are not all equal.
-
-The parameter \(t\) is what forces the answer to be a projective one.
-Writing \(F=\sum_\alpha F_\alpha z^\alpha\) with \(F_\alpha\in S\),
-\[\Phi(F)=\sum_\alpha
-\bar F_\alpha\,c^\alpha\,t^{\langle b,\alpha\rangle},\]
-and since \(t\) is a free variable this vanishes if and only if
-\(\sum \bar F_\alpha c^\alpha=0\) separately for each value of
-\(\langle b,\alpha\rangle=\sum_i b_i\alpha_i\). So \(t\) admits only those
-relations that are homogeneous in the \(z\)-degree, which are the ones
-that survive the scaling
-\(\lambda\cdot(z_0,\dots,z_N)=(\lambda^{b_0}z_0,\dots,\lambda^{b_N}z_N)\)
-under which the coordinates of \(Z\) are defined. Without it the kernel
-would also record that each \(z_i\) equals one particular element
-\(c_i\), which is not a statement about \(Z\) as a projective variety.
+Let \(y_0,\dots,y_n\) be the variables in the source block of \(S\), of
+degrees \((d_j,0)\). Each \(c_i\) becomes a homogeneous coordinate \(z_i\)
+on \(Z\), of degree \((0,b_i)\). The map to take the kernel of is
+\[\Psi\colon k[y_0,\dots,y_n,z_0,\dots,z_N]\longrightarrow R[1/\gamma],\qquad
+\Psi(y_j)=\bar y_j,\qquad \Psi(z_i)=\iota(c_i).\]
+The graph of \(h\colon Y\to Z\) is \(\ker\Psi\). The original target
+coordinates remain available inside \(R[1/\gamma]\), but they do not occur
+in the source of \(\Psi\): putting them beside the \(z_i\) in the second
+grading block would collapse two independent projective scalings and leave
+an extra parameter. Since \(\iota\) preserves the second degree, \(\Psi\) is
+bigraded without an auxiliary Rees parameter.
 
 Working over \(R[1/\gamma]\) rather than \(R\) is what saturates the
 result. The returned \texttt{graphData} holds the kernel under

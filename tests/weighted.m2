@@ -45,7 +45,9 @@ cIso = steinCoordinateAlgebra(dIso,0);
 assert(numgens(cIso#"definingIdeal") == 0);
 assert(dim(cIso#"ring") == 2);
 assert(apply({1,2,3},n -> hilbertFunction(n,cIso#"ring")) == {2,3,4});
-assert(isPrime((directSteinGraph(dIso,cIso))#"graphIdeal"));
+gIso = directSteinGraph(dIso,cIso);
+assert(isPrime(gIso#"graphIdeal"));
+assert(dim(gIso#"jointRing"/gIso#"graphIdeal") == dim dIso#"ring");
 
 -- Test 3: P(1,2) -> P^1, [y0:y1] |-> [y0^4:y1^2], a degree-2 map.
 -- Here the bound is not trivial, so the truncation has work to do.  Now
@@ -62,7 +64,9 @@ assert(numgens(cSq#"definingIdeal") == 1);
 assert(codim(cSq#"definingIdeal") == 1);
 assert(dim(cSq#"ring") == 2);
 assert(apply({1,2,3},n -> hilbertFunction(n,cSq#"ring")) == {3,5,7});
-assert(isPrime((directSteinGraph(dSq,cSq))#"graphIdeal"));
+gSq = directSteinGraph(dSq,cSq);
+assert(isPrime(gSq#"graphIdeal"));
+assert(dim(gSq#"jointRing"/gSq#"graphIdeal") == dim dSq#"ring");
 
 -- Test 4: a weighted source survives the graph construction.  The map
 -- P(1,2) -> P^1 given by (r0^2,r1) is the one of Test 2, so the graph it

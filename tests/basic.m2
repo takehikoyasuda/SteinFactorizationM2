@@ -13,6 +13,13 @@ iid = ideal(y0*x1-y1*x0);
 did = steinHomData(s1,iid);
 assert(did#"bound" == {0,0});
 assert(did#"steinGeneratorDegrees" == {{0,0}});
+cid = steinCoordinateAlgebra did;
+gid = directSteinGraph(did,cid);
+assert(gid#"sourceVariableCount" == 2);
+assert(#degrees(gid#"jointRing") == 4);
+assert(dim(gid#"jointRing"/gid#"graphIdeal") == dim did#"ring");
+assert(isHomogeneous(gid#"graphIdeal"));
+assert(isPrime(gid#"graphIdeal"));
 
 -- Test 2: finite square map [s:t] -> [s^2:t^2].
 use s1;
@@ -32,7 +39,10 @@ assert(isPrime(gsqDirect#"graphIdeal"));
 -- localization instead loses the grading of its coefficient ring and makes the
 -- ideal inhomogeneous.
 assert(isHomogeneous(gsqDirect#"graphIdeal"));
-assert(drop(degrees(gsqDirect#"jointRing"),gsqDirect#"ambientVariableCount")
+assert(gsqDirect#"sourceVariableCount" == 2);
+assert(#degrees(gsqDirect#"jointRing") == 5);
+assert(dim(gsqDirect#"jointRing"/gsqDirect#"graphIdeal") == dim dsq#"ring");
+assert(drop(degrees(gsqDirect#"jointRing"),gsqDirect#"sourceVariableCount")
     == apply(degrees(csqGeneral#"polynomialRing"),e -> {0,e#0}));
 
 rsq = dsq#"ring";
@@ -58,6 +68,7 @@ assert(numgens(ccuGeneral#"definingIdeal") == 3);
 gcuDirect = directSteinGraph(dcu,ccuGeneral);
 assert(gcuDirect#"saturationByLocalization");
 assert(isPrime(gcuDirect#"graphIdeal"));
+assert(dim(gcuDirect#"jointRing"/gcuDirect#"graphIdeal") == dim dcu#"ring");
 
 rcu = dcu#"ring";
 ecu = evaluateSteinGenerators(dcu,0);
@@ -127,6 +138,7 @@ assert(numgens(cmixedGeneral#"definingIdeal") == 3);
 gmixedDirect = directSteinGraph(dmixed,cmixedGeneral);
 assert(gmixedDirect#"saturationByLocalization");
 assert(isPrime(gmixedDirect#"graphIdeal"));
+assert(dim(gmixedDirect#"jointRing"/gmixedDirect#"graphIdeal") == dim dmixed#"ring");
 
 rmixed = dmixed#"ring";
 emixed = evaluateSteinGenerators(dmixed,0);
@@ -203,6 +215,7 @@ assert(hilbertFunction(2,cp2#"ring") == 15);
 gp2 = directSteinGraph(dp2,cp2);
 assert(gp2#"saturationByLocalization");
 assert(isPrime(gp2#"graphIdeal"));
+assert(dim(gp2#"jointRing"/gp2#"graphIdeal") == dim dp2#"ring");
 
 -- Test 6: P^2 -> P^2, [s:t:u] |-> [s^3:t^3:u^3].
 -- This stresses non-standard output: Hom is minimal as an A-module and returns
@@ -226,6 +239,7 @@ assert(hilbertFunction(2,cp2c#"ring") == 28);
 assert(isPrime(cp2c#"definingIdeal"));
 gp2c = directSteinGraph(dp2c,cp2c);
 assert(isPrime(gp2c#"graphIdeal"));
+assert(dim(gp2c#"jointRing"/gp2c#"graphIdeal") == dim dp2c#"ring");
 
 -- Public entry points reject malformed or unrelated data before an obscure
 -- downstream error occurs.
