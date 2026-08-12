@@ -7,6 +7,58 @@ errorsOut = f -> (
     result
     );
 
+-- Verify both projections of the corrected graph and the factorization
+-- g o h = f.  Elimination of the Stein block must recover Y; elimination of
+-- the source block must recover Z.  The first variables of the coordinate
+-- algebra are the original target coordinates, so they define g and allow the
+-- equations of the input graph to be checked after composition.
+checkDirectSteinGraph = (homData,algebraData,graphData) -> (
+    ambient := homData#"ambient";
+    rr := homData#"ring";
+    joint := graphData#"jointRing";
+    graphIdeal := graphData#"graphIdeal";
+    jointVars := flatten entries vars joint;
+    ns := graphData#"sourceVariableCount";
+    sourceJointVars := take(jointVars,ns);
+    steinJointVars := drop(jointVars,ns);
+    sourceAmbientVars := select(flatten entries vars ambient,
+        q -> (degree q)#1 == 0);
+    kk := coefficientRing ambient;
+
+    sourcePoly := kk[Variables=>ns,
+        Degrees=>apply(sourceAmbientVars,q -> {(degree q)#0})];
+    sourceToR := map(rr,sourcePoly,
+        apply(sourceAmbientVars,q -> sub(q,rr)));
+    sourceToJoint := map(joint,sourcePoly,sourceJointVars);
+    expectedSourceIdeal := sourceToJoint kernel sourceToR;
+    assert(trim eliminate(graphIdeal,steinJointVars)
+        == trim expectedSourceIdeal);
+
+    pp := algebraData#"polynomialRing";
+    steinToJoint := map(joint,pp,steinJointVars);
+    expectedSteinIdeal := steinToJoint algebraData#"definingIdeal";
+    assert(trim eliminate(graphIdeal,sourceJointVars)
+        == trim expectedSteinIdeal);
+
+    graphRing := joint/graphIdeal;
+    baseCount := algebraData#"baseGeneratorCount";
+    compositeImages := join(
+        apply(sourceJointVars,q -> sub(q,graphRing)),
+        apply(take(steinJointVars,baseCount),q -> sub(q,graphRing)));
+    compositeMap := map(graphRing,ambient,compositeImages);
+    assert(compositeMap homData#"graphIdeal" == 0);
+    true
+    );
+
+sameIdealUpToVariableNames = (leftIdeal,rightIdeal) -> (
+    leftRing := ring leftIdeal;
+    rightRing := ring rightIdeal;
+    if degrees leftRing != degrees rightRing then false else (
+        renameMap := map(rightRing,leftRing,flatten entries vars rightRing);
+        trim renameMap leftIdeal == trim rightIdeal
+        )
+    );
+
 -- Test 1: identity P^1 -> P^1.
 s1 = QQ[y0,y1,x0,x1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
 iid = ideal(y0*x1-y1*x0);
@@ -20,6 +72,7 @@ assert(#degrees(gid#"jointRing") == 4);
 assert(dim(gid#"jointRing"/gid#"graphIdeal") == dim did#"ring");
 assert(isHomogeneous(gid#"graphIdeal"));
 assert(isPrime(gid#"graphIdeal"));
+assert(checkDirectSteinGraph(did,cid,gid));
 
 -- Test 2: finite square map [s:t] -> [s^2:t^2].
 use s1;
@@ -44,6 +97,7 @@ assert(#degrees(gsqDirect#"jointRing") == 5);
 assert(dim(gsqDirect#"jointRing"/gsqDirect#"graphIdeal") == dim dsq#"ring");
 assert(drop(degrees(gsqDirect#"jointRing"),gsqDirect#"sourceVariableCount")
     == apply(degrees(csqGeneral#"polynomialRing"),e -> {0,e#0}));
+assert(checkDirectSteinGraph(dsq,csqGeneral,gsqDirect));
 
 rsq = dsq#"ring";
 esq = evaluateSteinGenerators(dsq,0);
@@ -69,6 +123,23 @@ gcuDirect = directSteinGraph(dcu,ccuGeneral);
 assert(gcuDirect#"saturationByLocalization");
 assert(isPrime(gcuDirect#"graphIdeal"));
 assert(dim(gcuDirect#"jointRing"/gcuDirect#"graphIdeal") == dim dcu#"ring");
+assert(checkDirectSteinGraph(dcu,ccuGeneral,gcuDirect));
+
+-- The localization element is an implementation choice.  For the three
+-- degree-(2,0) generators y1^2, y0*y1 and y0^2, the resulting coordinate and
+-- graph ideals agree after the automatic variables are identified by order.
+ccuMiddle = steinCoordinateAlgebra(dcu,1);
+ccuLast = steinCoordinateAlgebra(dcu,2);
+gcuMiddle = directSteinGraph(dcu,ccuMiddle);
+gcuLast = directSteinGraph(dcu,ccuLast);
+assert(sameIdealUpToVariableNames(
+    ccuGeneral#"definingIdeal",ccuMiddle#"definingIdeal"));
+assert(sameIdealUpToVariableNames(
+    ccuGeneral#"definingIdeal",ccuLast#"definingIdeal"));
+assert(sameIdealUpToVariableNames(
+    gcuDirect#"graphIdeal",gcuMiddle#"graphIdeal"));
+assert(sameIdealUpToVariableNames(
+    gcuDirect#"graphIdeal",gcuLast#"graphIdeal"));
 
 rcu = dcu#"ring";
 ecu = evaluateSteinGenerators(dcu,0);
@@ -139,6 +210,7 @@ gmixedDirect = directSteinGraph(dmixed,cmixedGeneral);
 assert(gmixedDirect#"saturationByLocalization");
 assert(isPrime(gmixedDirect#"graphIdeal"));
 assert(dim(gmixedDirect#"jointRing"/gmixedDirect#"graphIdeal") == dim dmixed#"ring");
+assert(checkDirectSteinGraph(dmixed,cmixedGeneral,gmixedDirect));
 
 rmixed = dmixed#"ring";
 emixed = evaluateSteinGenerators(dmixed,0);
@@ -258,6 +330,8 @@ print("OK identity: C has one generator over the target data.");
 print("OK square map: C is the plane conic X0*X1=z^2.");
 print("OK cubic map: C is the twisted cubic.");
 print("OK cubic factorization: g o h = f and h# is injective.");
+print("OK corrected graphs: elimination recovers Y and Z, and g o h = f.");
+print("OK localization: three admissible cubic choices give the same ideals.");
 print("OK direct strategy: Hom evaluations produce prime saturated graph closures.");
 print("OK mixed example: P1xP1 -> P1 has twisted-cubic Stein intermediate.");
 print("OK mixed charts: the supplied elements cover and each ring-map pair is inverse.");

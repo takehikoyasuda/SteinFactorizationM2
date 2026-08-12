@@ -1,7 +1,7 @@
 newPackage(
     "SteinFactorization",
-    Version => "0.2",
-    Date => "7 August 2026",
+    Version => "0.3",
+    Date => "12 August 2026",
     Headline => "Stein factorization of a projective morphism given by its graph",
     Authors => {{ Name => "Takehiko Yasuda", Email => "yasuda.takehiko.sci@osaka-u.ac.jp" }},
     HomePage => "https://github.com/takehikoyasuda/SteinFactorizationM2",

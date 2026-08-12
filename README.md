@@ -153,6 +153,10 @@ Implemented:
 - coordinate-algebra reconstruction via Lemma 5.2;
 - direct graph closure through the revised source--Stein kernel in the
   localization;
+- elimination regressions recovering both graph projections and checking
+  `g o h = f` in finite and positive-dimensional-fiber examples;
+- independence of the graph and coordinate ideals from three admissible
+  localization elements in the cubic example;
 - regression examples with finite, fiber-type, and divisorial contractions;
 - weighted projective input, in `tests/weighted.m2`. Only the split into a
   source block of degrees `(positive,0)` and a target block of degrees
