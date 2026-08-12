@@ -98,7 +98,11 @@ bigradedTruncationBound = (ff,d1,d2,c1,c2) -> (
         aPair(ff,dsum+1,dsum+1),
         aPair(ff,dsum,dsum)
         };
-    {bb#0-c1+1,bb#1-c2+1}
+    -- If the resolution has already ended, the corresponding maximum is
+    -- -infinity: the theorem imposes no lower bound in that coordinate.
+    -- truncate expects integer multidegrees, so choose the harmless bound 0.
+    {if bb#0 === -infinity then 0 else bb#0-c1+1,
+     if bb#1 === -infinity then 0 else bb#1-c2+1}
     );
 
 -- Note: the formula specializes to bigradedTruncationBound when M=N=R.
