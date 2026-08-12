@@ -538,7 +538,13 @@ reproduces the expected intermediate objects for finite maps,
 positive-dimensional connected fibers, a divisorial contraction, and a
 weighted projective source. The
 graph ideals produced by the direct localization strategy are prime in
-the completed examples. The computed Hilbert functions, exceptional
+the completed examples. In the identity, square, cube, and
+positive-dimensional-fiber tests, elimination of either coordinate block
+recovers the expected source or Stein intermediate, and substituting the
+finite map \(Z\to X\) into the input graph verifies \(g\circ h=f\). For the
+cubic map, the three localization elements \(y_1^2,y_0y_1,y_0^2\) give the
+same coordinate and graph ideals after identifying the automatically named
+variables. The computed Hilbert functions, exceptional
 divisors, and fiber structures agree with the classical invariants of
 the corresponding geometry. This is evidence that the implementation
 behaves as intended on these inputs; it is neither a proof of the
@@ -557,9 +563,6 @@ package. The main limitations are:
 \item
   Heuristic stabilization gives evidence but does not prove the explicit
   bound
-\item
-  The component-selection part of the full algorithm is not automated
-  for every possible input
 \item
   The weighted examples that have been run are small --- an isomorphism
   and a degree-two map out of \(\PP(1,2)\). Nothing on the scale of the
