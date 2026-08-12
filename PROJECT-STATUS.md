@@ -1,5 +1,11 @@
 # SteinFactorizationM2 作業中断時の状態記録
 
+> **2026年8月12日更新:** 以下は問題発見時の履歴記録である。論文の改訂後の
+> `B tensor C^[k] -> R_gamma` のkernel構成に合わせ、`directSteinGraph` は
+> source座標とStein座標だけを出力環に含めるよう修正した。恒等・二乗・三乗写像
+> および高次元例で、出力グラフ環と入力グラフ環のKrull次元が一致する回帰テストを
+> 追加した。以下の「現在」は2026年8月7日時点を指す。
+
 記録日：2026年8月7日
 
 作業ブランチ：`codex/manual-revision-independent`

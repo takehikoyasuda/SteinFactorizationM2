@@ -33,6 +33,7 @@ assert(isPrime jc);
 gh = directSteinGraph(d,c);
 assert(isHomogeneous(gh#"graphIdeal"));
 assert(isPrime(gh#"graphIdeal"));
+assert(dim(gh#"jointRing"/gh#"graphIdeal") == dim d#"ring");
 
 -- Fiber over [1:1:1].  On x2=1, x0^2=x1^2=1, while [s:t] is free.
 rfiber = QQ[fs,ft,fx0,fx1];
@@ -50,4 +51,3 @@ print("OK: Stein ring has H(1)=6, H(2)=15, as for the second Veronese of P2.");
 print("OK: Stein ring and direct Hom graph are prime.");
 print("OK: fiber over [1:1:1] is reduced with four components, each a P1.");
 print("Expected connected part: P1xP2 -> P2, a Mori fiber space with K.F=-2.");
-

@@ -378,7 +378,10 @@ steinDataByStabilization = (
         }
     );
 
--- Method: use a localization and a Rees parameter, then take the kernel of the map.
+-- Compute the graph in Y x Z.  The source coordinates are the first grading
+-- block of the ambient ring.  The target coordinates of f do not belong in the
+-- output: retaining them beside the Z coordinates in the same second grading
+-- block leaves an extra relative projective scaling parameter.
 directSteinGraph = (homData,algebraData) -> (
     if not algebraData#?"homData" or algebraData#"homData" =!= homData then
         error "the algebra data must have been built from this hom data";
@@ -388,36 +391,33 @@ directSteinGraph = (homData,algebraData) -> (
     ll := algebraData#"localizationPresentation";
     cimages := algebraData#"images";
     avars := flatten entries vars ambient;
+    sourceVars := select(avars,q -> (degree q)#1 == 0);
     zvars := flatten entries vars pp;
-    na := #avars;
+    ns := #sourceVars;
     nz := #zvars;
-    adegs := degrees ambient;
     zweights := apply(degrees pp,d -> d#0);
     kk := coefficientRing ambient;
     -- The i-th generator of the coordinate algebra is a section of degree
-    -- (0,zweights#i), so that is the bidegree its variable carries here.  Do not
-    -- read the degree off cimages#i instead: those live in the tower ring
-    -- rr[steinInverse], which forgets the grading of its coefficient ring rr and
-    -- reports (0,0) for a target coordinate and (-deg gamma) for an evaluated
-    -- generator.  With those degrees the graph ideal is not even homogeneous.
+    -- (0,zweights#i), so that is the bidegree its variable carries here.  The
+    -- images live in the localization tower, whose reported degrees do not
+    -- retain the grading of the coefficient ring, so read the weights from pp.
     jointDegrees := join(
-        adegs,
+        apply(sourceVars,degree),
         apply(zweights,b -> {0,b})
         );
-    joint := kk[Variables=>na+nz,Degrees=>jointDegrees];
-    target0 := ll[getSymbol "steinGraphParameter",Degrees=>{{0,0}}];
-    tpar := target0_0;
-    ambientImages := apply(avars,q -> sub(sub(q,rr),ll));
-    zimages := apply(toList(0..nz-1),i ->
-        sub(cimages#i,target0)*tpar^(zweights#i));
-    graphMap := map(target0,joint,join(ambientImages,zimages));
+    joint := kk[Variables=>ns+nz,Degrees=>jointDegrees];
+    sourceImages := apply(sourceVars,q -> sub(sub(q,rr),ll));
+    graphMap := map(ll,joint,join(sourceImages,cimages));
     graphIdeal := kernel graphMap;
     new HashTable from {
         "jointRing" => joint,
         "graphIdeal" => graphIdeal,
         "graphMap" => graphMap,
-        "sourceRepresentation" => "Gamma_f (canonically isomorphic to Y)",
-        "ambientVariableCount" => na,
+        "sourceRepresentation" => "Y in its source coordinate block",
+        "sourceVariableCount" => ns,
+        -- Retained for callers of the development API.  It now counts only the
+        -- ambient variables that survive in the corrected joint ring.
+        "ambientVariableCount" => ns,
         "steinVariableCount" => nz,
         "saturationByLocalization" => true
         }
@@ -774,8 +774,7 @@ Node
       $\mathbb{P}^3$ being where $Y$ sits by the Segre embedding.  The
       auxiliary ring is only for writing the graph down: $s,t$ and $u,v$ are
       the coordinates of the two factors of $Y$, while $a$ and $b$ scale the
-      two blocks separately, which is what makes the kernel bihomogeneous ---
-      the device the parameter $t$ performs in @TO directSteinGraph@.
+      two blocks separately, which is what makes the kernel bihomogeneous.
     Text
       The coordinate algebra of $Z$ is
       {\tt "polynomialRing"} modulo {\tt "definingIdeal"}:
@@ -851,30 +850,19 @@ Node
     Text
       The algebra generators of $Z$ produced by the previous step are elements
       $c_0,\dots,c_N$ of $C$, homogeneous of bidegrees $(0,b_0),\dots,(0,b_N)$.
-      Each becomes a homogeneous coordinate $z_i$ on $Z$ carrying the bidegree
-      of the $c_i$ it stands for,
-      $$J=S[z_0,\dots,z_N],\qquad \deg z_i=(0,b_i),$$
-      and the graph is the kernel of
-      $$\Phi\colon J\longrightarrow R[1/\gamma][t],\qquad
-      \Phi(x)=\bar x\ (x\text{ a variable of }S),\qquad
-      \Phi(z_i)=c_i\,t^{b_i}.$$
-      So $J$ is the coordinate ring of the product of the two spaces containing
-      $\Gamma_f$ with the weighted projective space in which the $z_i$ place
-      $Z$; it is weighted exactly when the $b_i$ are not all equal.
+      Let $y_0,\dots,y_n$ be the variables in the source block of the ambient
+      ring.  Each $c_i$ becomes a homogeneous coordinate $z_i$ on $Z$ carrying
+      the bidegree of the section it stands for.  The graph is the kernel of
+      $$\Psi\colon k[y_0,\dots,y_n,z_0,\dots,z_N]\longrightarrow R[1/\gamma],$$
+      $$\Psi(y_j)=\bar y_j,\qquad \Psi(z_i)=\iota(c_i),$$
+      with $\deg y_j=(d_j,0)$ and $\deg z_i=(0,b_i)$.
     Text
-      The parameter $t$ is what forces the answer to be a projective one.
-      Writing $F=\sum_\alpha F_\alpha z^\alpha$ with $F_\alpha\in S$,
-      $$\Phi(F)=\sum_\alpha \bar F_\alpha\,c^\alpha\,
-      t^{\langle b,\alpha\rangle},$$
-      and since $t$ is a free variable this vanishes if and only if
-      $\sum \bar F_\alpha c^\alpha=0$ separately for each value of
-      $\langle b,\alpha\rangle$.  So $t$ admits only those relations that are
-      homogeneous in the $z$-degree, which are the ones that survive the
-      scaling $\lambda\cdot(z_0,\dots,z_N)=(\lambda^{b_0}z_0,\dots,
-      \lambda^{b_N}z_N)$ under which the coordinates of $Z$ are defined.
-      Without it the kernel would also record that each $z_i$ equals one
-      particular element $c_i$, which is not a statement about $Z$ as a
-      projective variety.
+      The coordinates of the original target $X$ remain available inside
+      $R[1/\gamma]$ for the computation, but do not occur in the source of
+      $\Psi$.  Putting them beside the $z_i$ in one second grading block would
+      identify their two independent projective scalings and leave an extra
+      parameter.  The bidegrees already make $\Psi$ graded, so no auxiliary
+      Rees parameter is needed.
 
       Working over $R[1/\gamma]$ saturates with respect to $\gamma$: the kernel
       describes the graph over $\{\gamma\ne0\}$ and then takes its closure.
@@ -890,22 +878,21 @@ Node
       isHomogeneous graphData#"graphIdeal"
       isPrime graphData#"graphIdeal"
     Text
-      The joint ring has the four variables of {\tt S} followed by the three
+      The joint ring has the two source-block variables of {\tt S} followed by
       $z_i$, one for each algebra generator that
       @TO steinCoordinateAlgebra@ used, and each $z_i$ carries the bidegree
       $(0,b_i)$ of the section it stands for.  Reading those degrees off the
-      localization instead would lose the grading of its coefficient ring $R$
-      and report $(0,0)$ for a target coordinate, leaving the ideal not even
-      homogeneous.
+      localization instead would lose the grading of its coefficient ring $R$.
     Text
-      In the printed ideal the variables after those of {\tt S} are the
-      coordinates of $Z$.  Its conic relation presents $Z$, while the mixed
+      In the printed ideal the variables after the source-block variables are
+      the coordinates of $Z$.  Its conic relation presents $Z$, while the mixed
       relations with $y_0,y_1$ describe the graph of $h$.
     Text
       {\bf Principal result keys.}  {\tt "jointRing"} contains the graph ideal
       under {\tt "graphIdeal"}, and {\tt "graphMap"} is the map whose kernel it
-      is.  {\tt "saturationByLocalization"} records the construction just
-      described; it is not the outcome of an additional test.
+      is.  {\tt "sourceVariableCount"} and {\tt "steinVariableCount"}
+      record the two blocks.  {\tt "saturationByLocalization"} records the
+      construction just described; it is not the outcome of an additional test.
   SeeAlso
     steinCoordinateAlgebra
     checkChartwiseInverses

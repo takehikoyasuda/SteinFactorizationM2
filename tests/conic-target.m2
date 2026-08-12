@@ -69,6 +69,7 @@ assert(isPrime(c#"definingIdeal"));
 g = directSteinGraph(d,c);
 assert(isHomogeneous(g#"graphIdeal"));
 assert(isPrime(g#"graphIdeal"));
+assert(dim(g#"jointRing"/g#"graphIdeal") == dim d#"ring");
 
 -- h is not an isomorphism, which is what separates this from a finite f.
 -- Over the point [1:1:1] of X the equations u^4 = u^2*v^2 = v^4 give v^2 = u^2,
