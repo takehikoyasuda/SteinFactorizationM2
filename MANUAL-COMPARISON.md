@@ -1,15 +1,22 @@
 # マニュアル修正版の比較
 
-## 作業状態：保留
+## 作業状態：保留（保留の理由は2026年8月17日に変わった）
 
-2026年8月7日、三版の比較作業をここで中止し、意図的に保留とした。全体としては
-ChatGPT版の簡潔な説明を今後の主案とする予定である。ただし、グラフ復元
-アルゴリズムに先に解決すべき数学的問題が見つかったため、現時点ではどの版も
-最終版として採用またはマージしない。
+2026年8月7日、三版の比較作業をここで中止し、意図的に保留とした。当時の理由は、
+グラフ復元アルゴリズムに先に解決すべき数学的問題が見つかったことである。
 
-比較を再開するのは、正しいグラフ復元アルゴリズムが論文側で確定し、Macaulay2
-実装とテストに反映された後とする。現在の判断と再開手順は
+その問題は解決し、修正を含む `fix/paper-stein-graph` は2026年8月17日に `main`
+へ統合した。したがって「コードが動くまで待つ」という当初の保留理由はもうない。
+それでも比較そのものは未着手のまま保留とする。残っているのは文章の採否という
+人手の判断であり、まとまった時間を要するためである。経緯と現在の状態は
 `PROJECT-STATUS.md` に記録している。
+
+全体としてChatGPT版の簡潔な説明を主案とする方針は変わっていない。ChatGPT版
+（`c1355b8`）はすでに `main` に入っており、以後のコード修正に伴う加筆もその上に
+乗っている。Claude版（`91db3ea`）はブランチ `claude/manual-revision` に保存して
+ある。両者は同一の修正計画を独立に適用したものなので、機械的にマージすると全
+対象ファイルが競合する（`SteinFactorization.m2` だけで41箇所）。統合するなら、
+この文書の観点にそって項目ごとに採否を決める必要がある。
 
 この文書は、修正前、Claude版、ChatGPT版の三者を比較し、最終統合版で何を
 採用するかを記録するためのものである。Claude版またはChatGPT版のどちらかを
@@ -17,18 +24,28 @@ ChatGPT版の簡潔な説明を今後の主案とする予定である。ただ�
 
 ## 比較対象（固定スナップショット）
 
-比較用worktreeは次のコミットに固定されている。閲覧とマニュアルの再生成に使い、
-ここでは編集しない。最終版の編集は通常の作業フォルダで行う。
+三版は次のコミットで固定されている。いずれもリポジトリに残してあるので、閲覧と
+マニュアルの再生成はこのコミットから行う。最終版の編集は通常の作業フォルダで
+行う。
 
-| 版 | コミット | 比較用worktree | 生成済みマニュアル |
-| --- | --- | --- | --- |
-| 修正前 | `b2435e9` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/before` | [HTMLを開く](</Users/highernash/Developer/SteinFactorizationM2-comparison/before/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
-| Claude版 | `91db3ea` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/claude` | [HTMLを開く](</Users/highernash/Developer/SteinFactorizationM2-comparison/claude/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
-| ChatGPT版 | `c1355b8` | `/Users/highernash/Developer/SteinFactorizationM2-comparison/chatgpt` | [HTMLを開く](</Users/highernash/Developer/SteinFactorizationM2-comparison/chatgpt/doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html>) |
+| 版 | コミット | 所在 |
+| --- | --- | --- |
+| 修正前 | `b2435e9` | ブランチ `codex/review-by-chatgpt` の先端 |
+| Claude版 | `91db3ea` | ブランチ `claude/manual-revision` の先端 |
+| ChatGPT版 | `c1355b8` | `main` の履歴内（以後の修正が上に乗っている） |
 
-三版ともMacaulay2 1.26.06でHTMLを再生成できた。修正前だけは、既知の引用情報
-不足の警告を出すが、例の実行は成功している。再生成する場合は、対象worktreeで
-`make docs-all` を実行する。
+比較用のHTMLを読むには、リポジトリの外に版ごとのworktreeを作り、そこで
+`make docs-all` を実行する。生成物は各worktreeの
+`doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html` にできる。
+
+```sh
+git worktree add ../SteinFactorizationM2-comparison/before  b2435e9
+git worktree add ../SteinFactorizationM2-comparison/claude  91db3ea
+git worktree add ../SteinFactorizationM2-comparison/chatgpt c1355b8
+```
+
+三版ともMacaulay2 1.26.06でHTMLを再生成できることを確認済みである。修正前だけは、
+既知の引用情報不足の警告を出すが、例の実行は成功している。
 
 ## 三版の違いの概要
 
@@ -98,7 +115,12 @@ Claude版とChatGPT版は独立した修正だが、重要な方向はかなり�
 下の判断記録で決める。
 
 なお、この見通しはグラフ復元アルゴリズムの問題を発見する前の文章評価に基づく。
-`directSteinGraph` およびそれに依存する説明は、三版とも再検討が必要である。
+`directSteinGraph` に関する説明は、三版とも修正前のグラフ構成、すなわち出力環に
+target座標を残し補助変数 \(t\) を使う方式を説明している。この構成は `8b30051` で
+置き換えられ、それに伴う説明の書き直しは `main`（ChatGPT版の系列）にだけ入って
+いる。したがって `directSteinGraph` とそれに依存する記述については、三版の比較は
+そのままでは成り立たない。この項目は `main` の現在の記述を出発点とし、Claude版
+からは説明の書き方だけを参考にする。
 
 ## 比較するときに特に注目すべき点
 
@@ -151,15 +173,19 @@ Claude版とChatGPT版の直接差分だけを見ると、元の正しい記述�
 1. 三つのHTMLを別タブで開き、パッケージ概要から通常の利用順に読む。
 2. `b2435e9..91db3ea` で、修正前からClaude版への変更を見る。
 3. `b2435e9..c1355b8` で、修正前からChatGPT版への変更を見る。
-4. 最後に `91db3ea..c1355b8` で、両修正版の判断が違う箇所を抽出する。
-5. 動作、入力、戻り値、数学的主張が変わる箇所は、同じ例とテストで確認する。
+4. 次に `91db3ea..c1355b8` で、両修正版の判断が違う箇所を抽出する。
+5. 最後に `c1355b8..main` で、ChatGPT版のあとに入ったグラフ修正とその説明を
+   確認する。採否の対象は `main` の現在の記述であって、`c1355b8` の記述では
+   ないためである。
+6. 動作、入力、戻り値、数学的主張が変わる箇所は、同じ例とテストで確認する。
 
-メインのリポジトリから使える基本的な差分表示は次のとおりである。
+基本的な差分表示は次のとおりである。
 
 ```text
 git diff b2435e9..91db3ea -- SteinFactorization.m2
 git diff b2435e9..c1355b8 -- SteinFactorization.m2
 git diff 91db3ea..c1355b8 -- SteinFactorization.m2
+git diff c1355b8..main    -- SteinFactorization.m2
 ```
 
 対象を `README.md`、`IMPLEMENTATION.tex`、`tests/` に変えれば個別に比較できる。
