@@ -1,16 +1,4 @@
-*.out
-*.log
-*.aux
 .DS_Store
-*.toc
-*.synctex.gz
-*.fls
-*.fdb_latexmk
-
-# The built note.  A PDF is already compressed, so git cannot delta it and each
-# revision would cost a full copy in the history.  CI builds it from the tex and
-# publishes it to GitHub Pages instead.
-IMPLEMENTATION.pdf
 
 # The package documentation, as `make docs` builds it.  Generated from the doc
 # block in SteinFactorization.m2, and holding the cached example output beside
