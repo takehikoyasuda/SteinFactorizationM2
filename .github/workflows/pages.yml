@@ -1,0 +1,67 @@
+# Publish the package manual to GitHub Pages.
+#
+# installPackage writes its html for a local Macaulay2 installation: the
+# stylesheet, the KaTeX scripts that render the mathematics, and every link to
+# a core Macaulay2 node are absolute paths into the M2 prefix.  Uploading that
+# directory as it stands gives an unstyled page with the mathematics as raw TeX
+# and those links dead, so .github/make-site.sh repairs it first.
+#
+# Nothing generated is committed: the manual is rebuilt here from the sources
+# on every push, and the run fails if any documented example stops working
+# (make docs-all passes IgnoreExampleErrors => false).
+name: Manual
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one midway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # The PPA carries 1.26.06 for noble, which is what the package is
+      # developed and tested against.  The runner is pinned for that reason:
+      # ubuntu-latest moving to another series could move the M2 version too.
+      - name: Install Macaulay2
+        run: |
+          sudo add-apt-repository -y ppa:macaulay2/macaulay2
+          sudo apt-get install -y --no-install-recommends macaulay2
+          M2 --version
+
+      - name: Build the manual
+        run: make docs-all
+
+      - name: Make the pages self-contained
+        run: |
+          .github/make-site.sh \
+            doc-build/share/doc/Macaulay2/SteinFactorization/html \
+            site SteinFactorization \
+            "https://github.com/${{ github.repository }}"
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
