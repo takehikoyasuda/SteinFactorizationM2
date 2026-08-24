@@ -180,9 +180,13 @@ Current performance issue:
 
 ## Use of AI
 
-The code, the tests, and the technical note were written essentially by an AI
-system (Claude), with minor edits by the author.  The author has read them and
-believes them to be correct, but has not checked every detail.  The algorithm
+The code and the tests were written essentially by an AI system (Claude), with
+minor edits by the author.  ChatGPT was also used during development, both for
+design and algorithm discussion and for an independent review and revision of
+the package documentation, some of which was adopted into the current manual;
+see [MANUAL-COMPARISON.md](MANUAL-COMPARISON.md) for that comparison.  The
+author has read all of this and believes it to be correct, but has not checked
+every detail.  The algorithm
 itself is the one in the paper above and nothing conceptually difficult is
 attempted here, and each example is checked automatically against
 independently known geometry, so large errors are unlikely — but this is a
