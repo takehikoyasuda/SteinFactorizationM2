@@ -30,7 +30,7 @@
 
 #### A-1. `certifyChartwiseProjectionIsomorphism` の証明書を実態に合わせる
 
-**指摘は正しい。** [SteinFactorization.m2:484-498](SteinFactorization.m2#L484-L498)
+**指摘は正しい。** [SteinFactorization.m2:484-498](../SteinFactorization.m2#L484-L498)
 の実装は (i) `coverElements` が `Proj(sourceRing)` を被覆すること、(ii) 各
 `chartMapPairs` の二本の環準同型が互いに逆であること、の二つしか検査していない。
 にもかかわらず戻り値には
@@ -61,10 +61,10 @@
 - 例の `y0`/`y1` のずれを直す。本文は最初の写像対を「$y_1\neq0$ のチャート」と
   説明しているのに、渡している被覆元の先頭は `y0`。被覆元を `{y1,y0}` の順に
   するのが最小の修正。
-- [tests/basic.m2:171](tests/basic.m2#L171) の
+- [tests/basic.m2:171](../tests/basic.m2#L171) の
   `assert(mixedChartCertificate#"projectionIsomorphismCertified")` を
   `"coverCertified"` と `"localIsomorphismsCertified"` への assertion に置き換える。
-- [MANUAL-REVIEW.md](MANUAL-REVIEW.md) の該当行のページ名を更新する。
+- 旧 `MANUAL-REVIEW.md`(未完了のまま削除済み)の該当行のページ名を更新する。
 
 **本物の証明書に作り直す案は採らない。** 各チャートについて被覆元・源の局所化・
 グラフの局所化・射影・逆射を束ねた入力型を設計し、構造写像と重なりまで検査する
@@ -74,7 +74,7 @@
 
 #### A-2. 重み付き標的の例は同型ではない
 
-**指摘は正しい。** [SteinFactorization.m2:1041](SteinFactorization.m2#L1041) は
+**指摘は正しい。** [SteinFactorization.m2:1041](../SteinFactorization.m2#L1041) は
 $(r_0,r_1^2)$ による $\mathbb{P}^1\to\mathbb{P}(1,2)$ を同型と呼んでいるが、これは
 次数2である。$y_0\neq0$ のチャートで $\mathbb{P}(1,2)$ の座標は $u=y_1/y_0^2$ で、
 その引き戻しは $(r_1/r_0)^2$。$\mathbb{P}(1,2)\cong\mathbb{P}^1$ を
@@ -92,7 +92,7 @@ $[y_0:y_1]\mapsto[y_0^2:y_1]$ で書けば合成は $t\mapsto t^2$ になる。
   射の次数が別物であることが読者に伝わる。
 - 共通倍率 $e$ の幾何的な意味も一行。比例していることは写像が well-defined で
   あることしか意味せず、有限性・双有理性・同型性は何も言わない。
-- [tests/weighted.m2:81-83](tests/weighted.m2#L81-L83) の Test 5 のコメントを同様に
+- [tests/weighted.m2:81-83](../tests/weighted.m2#L81-L83) の Test 5 のコメントを同様に
   訂正する。テストの assertion 自体（base point free、次数、斉次性、素性）は
   正しく、同型であることは一つも主張していないので、変更は不要。
 - 同型の例が欲しければ Test 2 の $\mathbb{P}(1,2)\to\mathbb{P}^1$, $(y_0^2,y_1)$
@@ -106,13 +106,13 @@ $[y_0:y_1]\mapsto[y_0^2:y_1]$ で書けば合成は $t\mapsto t^2$ になる。
 レビューは `certifyChartwiseProjectionIsomorphism` だけを挙げているが、同じ形が
 二箇所ある。
 
-- [SteinFactorization.m2:442](SteinFactorization.m2#L442):
+- [SteinFactorization.m2:442](../SteinFactorization.m2#L442):
   `certifiedWeightedGraph` の `"projectionIsomorphismCertified" => true`。
   こちらは**主張としては正しい**（射の graph は源に同型に射影し、base point
   freeness は実際に検査している）が、計算した結果のように見える鍵名が誤解を
   招く。`"projectionIsomorphismByConstruction"` に改名するか、`Outputs` に
   「構成から従う事実であって、この呼び出しが検査した結果ではない」と明記する。
-- [SteinFactorization.m2:380](SteinFactorization.m2#L380):
+- [SteinFactorization.m2:380](../SteinFactorization.m2#L380):
   `directSteinGraph` の `"saturationByLocalization" => true`。同じく手法の宣言で
   あって検査結果ではない。`Outputs` でそう述べる。
 
@@ -120,7 +120,7 @@ $[y_0:y_1]\mapsto[y_0^2:y_1]$ で書けば合成は $t\mapsto t^2$ になる。
 
 #### B-1. トップページに「Assumptions」段落を置く
 
-**指摘は正しい。** [SteinFactorization.m2:1175](SteinFactorization.m2#L1175) 付近の
+**指摘は正しい。** [SteinFactorization.m2:1175](../SteinFactorization.m2#L1175) 付近の
 `evaluateSteinGenerators` の議論は「$R$ は整域である、$\Gamma_f$ が variety だから」
 に依存しているが、`steinHomData` は素性を検査せず、`Inputs` は「bihomogeneous
 ideal」としか要求していない。トップページが「variety」と呼んでいるのは意図の
@@ -150,7 +150,7 @@ ideal」としか要求していない。トップページが「variety」と�
 - `steinHomDataAtBound`: `r` が長さ2の整数リストであること。
 - `steinDataByStabilization`: `startBound` が長さ2、`hilbertMax >= 0`、および
   `requiredMatches > maxSteps - 1` が原理的に成功しえない組み合わせであること
-  （現状 [SteinFactorization.m2:301-302](SteinFactorization.m2#L301-L302) は
+  （現状 [SteinFactorization.m2:301-302](../SteinFactorization.m2#L301-L302) は
   `maxSteps >= 2` と `requiredMatches >= 1` しか見ていない）。
 - `selectCertifiedGraphComponent`: 各候補が `certified#"productRing"` のイデアル
   であること（`ring candidates#i === pp`）。
@@ -216,7 +216,7 @@ bound、$Z$ の座標環、$h$ のグラフイデアル）を示す。読む順�
 - `certifiedHomogeneousGraph` / `certifiedWeightedGraph`: `basePointFree` が何を
   検査した結果か、A-3 の鍵が何を意味するか。
 - `bigradedGlobalHomData`: `sourceResolution` が `LengthLimit=>0` で要求した
-  自由被覆でしかないこと（[SteinFactorization.m2:115-119](SteinFactorization.m2#L115-L119)
+  自由被覆でしかないこと（[SteinFactorization.m2:115-119](../SteinFactorization.m2#L115-L119)
   のコメントはそう言っているが、ページは言っていない）。
 
 `README.md:94` の「both resolutions」も同じ理由で不正確。源側は自由被覆である。
@@ -239,8 +239,8 @@ bound、$Z$ の座標環、$h$ のグラフイデアル）を示す。読む順�
 
 #### C-4. コメントアウトされた `Text` ブロックの処理
 
-三箇所ある（[:581-585](SteinFactorization.m2#L581-L585),
-[:646-656](SteinFactorization.m2#L646-L656), [:675](SteinFactorization.m2#L675)）。
+三箇所ある（[:581-585](../SteinFactorization.m2#L581-L585),
+[:646-656](../SteinFactorization.m2#L646-L656), [:675](../SteinFactorization.m2#L675)）。
 一律に削除はしない。
 
 - `:581-585`（Corollary 4.3 の四つの数を渡さない理由）は `blockDegreeData` の

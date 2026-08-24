@@ -8,7 +8,7 @@ Algorithm 1 ([arXiv:2603.13703v2](https://arxiv.org/abs/2603.13703v2)).
 > revised kernel construction in the paper: it uses the source coordinates and
 > the Stein coordinates, but omits the original target coordinates from the
 > output ring.  Dimension regressions cover the error described in
-> [PROJECT-STATUS.md](PROJECT-STATUS.md).  The package remains a research
+> [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).  The package remains a research
 > prototype and has not received a complete independent mathematical review.
 
 The project computes the bigraded Hom module
@@ -184,7 +184,7 @@ The code and the tests were written essentially by an AI system (Claude), with
 minor edits by the author.  ChatGPT was also used during development, both for
 design and algorithm discussion and for an independent review and revision of
 the package documentation, some of which was adopted into the current manual;
-see [MANUAL-COMPARISON.md](MANUAL-COMPARISON.md) for that comparison.  The
+see [docs/MANUAL-COMPARISON.md](docs/MANUAL-COMPARISON.md) for that comparison.  The
 author has read all of this and believes it to be correct, but has not checked
 every detail.  The algorithm
 itself is the one in the paper above and nothing conceptually difficult is
