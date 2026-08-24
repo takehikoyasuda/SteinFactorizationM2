@@ -18,9 +18,14 @@ STYLE="${PREFIX}share/Macaulay2/Style"
 [ -d "$STYLE" ] || { echo "no Style directory at $STYLE" >&2; exit 1; }
 
 rm -rf "$OUT"; mkdir -p "$OUT"
-cp -R "$HTML"/. "$OUT"/
+cp -RL "$HTML"/. "$OUT"/
 mkdir -p "$OUT/Style"
-cp -R "$STYLE"/. "$OUT/Style"/
+# -L, so that a Style tree assembled out of symlinks -- as the Debian and
+# Ubuntu packages do for the bundled KaTeX -- is copied as plain files.  The
+# Pages upload action tars the site with --dereference and stops on a link it
+# cannot follow.
+cp -RL "$STYLE"/. "$OUT/Style"/
+find "$OUT" -type l -print -delete
 
 CORE="https://macaulay2.com/doc/Macaulay2/share/doc/Macaulay2/"
 BANNER="<div style=\"margin:0 0 1.5em;padding:.75em 1em;border:1px solid #c9c9c9;background:#fbf7e8;font-family:sans-serif;font-size:90%;line-height:1.5\">This is the manual of <b>${PKG}</b>, a third-party research package. It is <b>not part of the Macaulay2 distribution</b> and has not been reviewed by it; the pages merely use Macaulay2's own documentation format. Source and installation instructions: <a href=\"${REPO}\">${REPO}</a>.</div>"

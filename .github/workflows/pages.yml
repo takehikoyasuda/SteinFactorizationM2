@@ -77,6 +77,14 @@ jobs:
             site SteinFactorization \
             "https://github.com/${{ github.repository }}"
 
+      # The same tar the upload action runs, so that if it objects the message
+      # appears here rather than as a bare exit code inside that action.
+      - name: Check the site tars cleanly
+        run: |
+          find site ! -type f ! -type d -print
+          tar --dereference --hard-dereference -cf /dev/null -C site .
+          du -sh site
+
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
