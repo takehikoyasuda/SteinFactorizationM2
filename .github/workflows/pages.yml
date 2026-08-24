@@ -32,13 +32,39 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # The PPA carries 1.26.06 for noble, which is what the package is
-      # developed and tested against.  The runner is pinned for that reason:
+      # The Macaulay2 PPA carries 1.26.06 for noble, which is what the package
+      # is developed and tested against.  The runner is pinned for that reason:
       # ubuntu-latest moving to another series could move the M2 version too.
+      #
+      # The apt source is written out by hand rather than by
+      # add-apt-repository, which asks Launchpad's API for the signing key and
+      # has been seen to fail there with a transient
+      # GPGKeyTemporarilyNotFoundError (HTTP 500).  The key is fetched from the
+      # keyserver by its fingerprint instead, and both network steps are
+      # retried.
       - name: Install Macaulay2
+        env:
+          M2_PPA_FINGERPRINT: 5B17CD31DA995CFAA1B0D4FD08416FF271BC6AA8
         run: |
-          sudo add-apt-repository -y ppa:macaulay2/macaulay2
-          sudo apt-get install -y --no-install-recommends macaulay2
+          set -eu
+          retry() {
+            for i in 1 2 3 4 5; do
+              "$@" && return 0
+              echo "attempt $i failed; retrying in $((i * 10))s" >&2
+              sleep $((i * 10))
+            done
+            return 1
+          }
+          sudo install -d -m 0755 /etc/apt/keyrings
+          retry sh -c "curl -fsSL \
+            'https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0x${M2_PPA_FINGERPRINT}' \
+            | sudo gpg --dearmor -o /etc/apt/keyrings/macaulay2.gpg"
+          echo "deb [signed-by=/etc/apt/keyrings/macaulay2.gpg]" \
+            "https://ppa.launchpadcontent.net/macaulay2/macaulay2/ubuntu" \
+            "$(. /etc/os-release && echo "$VERSION_CODENAME") main" \
+            | sudo tee /etc/apt/sources.list.d/macaulay2.list
+          retry sudo apt-get update
+          retry sudo apt-get install -y --no-install-recommends macaulay2
           M2 --version
 
       - name: Build the manual
