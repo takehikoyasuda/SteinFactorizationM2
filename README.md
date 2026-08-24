@@ -2,7 +2,9 @@
 
 Macaulay2 prototype for the Stein factorization algorithm in Takehiko Yasuda,
 *An algorithm for the minimal model program in dimension three*, §4–§5 and
-Algorithm 1 ([arXiv:2603.13703v2](https://arxiv.org/abs/2603.13703v2)).
+Algorithm 2 ([arXiv:2603.13703](https://arxiv.org/abs/2603.13703)).  Numbered
+results are cited by their v3 numbering throughout; earlier versions number
+some of them differently.
 
 > **Development status (12 August 2026).**  `directSteinGraph` now follows the
 > revised kernel construction in the paper: it uses the source coordinates and
@@ -134,7 +136,7 @@ Implemented:
 - Corollary 4.3 shift bound from a bounded minimal free resolution;
 - multigraded orthant truncation;
 - finite `(0,>=0)`-strand presentation over `A` using `pushForward`;
-- coordinate-algebra reconstruction via Lemma 5.2;
+- coordinate-algebra reconstruction via Lemma 5.3;
 - direct graph closure through the revised source--Stein kernel in the
   localization;
 - elimination regressions recovering both graph projections and checking

@@ -42,8 +42,8 @@
   期待どおりに動くが、命題としての確定は論文改訂側で続いている
   （`PAPER-REVISION-DIRECT-GRAPH.md`）。
 - `selectCertifiedGraphComponent`：候補を生成せず、与えられた候補を既知のグラフと
-  双射影的飽和のうえで比較するだけである。論文Algorithm 1のcomponent選択は
-  実装していない。
+  双射影的飽和のうえで比較するだけである。論文Algorithm 2（v3。旧版では
+  Algorithm 1）のcomponent選択は実装していない。
 - `checkChartwiseInverses`：与えられた被覆と環写像の算術的確認に限られ、グラフ
   射影の同型を証明しない。
 - suppliedまたはheuristic boundを使った出力は、そのboundが十分大きいことを別に
@@ -55,7 +55,8 @@
 
 以下は問題を発見した時点の記録である。上の「現在の状態」に置き換わっているが、
 判断の経緯を残すためそのまま保存する。この節での「現在」は2026年8月7日時点を
-指す。
+指す。定理・アルゴリズム番号も当時の版（v2）のものである（v3 では Lemma 5.2 →
+Lemma 5.3、Algorithm 1（Stein 分解）→ Algorithm 2）。
 
 記録日：2026年8月7日
 

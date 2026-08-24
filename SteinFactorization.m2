@@ -26,8 +26,9 @@ export {
     }
 
 
--- Core implementation of Section 5.1 of Yasuda, arXiv:2603.13703v2
--- (https://arxiv.org/abs/2603.13703v2).
+-- Core implementation of Section 5.1 of Yasuda, arXiv:2603.13703
+-- (https://arxiv.org/abs/2603.13703).  Numbered results are cited by their
+-- v3 numbering.
 -- Input convention: variables of the source block have degrees (positive,0),
 -- variables of the target block have degrees (0,positive).  Only the split into
 -- two blocks matters; the degrees within a block need not be 1, so weighted
@@ -239,7 +240,7 @@ steinHomDataAtBound = (ambient,igraph,bound) -> (
         }
     );
 
--- Note: Lemma 5.2 uses psi_i(gamma)/gamma as the corresponding coordinate function.
+-- Note: Lemma 5.3 uses psi_i(gamma)/gamma as the corresponding coordinate function.
 evaluateSteinGenerators = (homData,evaluationElementIndex) -> (
     evaluationElementOf(homData,evaluationElementIndex);
     ee := homData#"evaluationMatrix";
@@ -592,7 +593,7 @@ Node
       {\bf Assumptions.}  The coefficient ring is expected to be a field and
       $I_{\Gamma_f}$ a prime ideal defining the graph of a morphism.  Primality
       and the assertion that the input is a graph are not checked; the domain
-      hypothesis is used by the evaluation in Lemma 5.2.  The two-block
+      hypothesis is used by the evaluation in Lemma 5.3.  The two-block
       bigrading is checked by the entry points that receive an ambient
       bigraded ring.  No characteristic restriction is imposed by the code.
   Subnodes
@@ -1297,7 +1298,7 @@ Node
   Description
     Text
       The strand $C$ carries no multiplication of its own, being a module of
-      homomorphisms.  Lemma 5.2 of @TO2 {"Bibliography", "Yasuda (2026)"}@ gives
+      homomorphisms.  Lemma 5.3 of @TO2 {"Bibliography", "Yasuda (2026)"}@ gives
       it one by realizing it inside a localization: fix a nonzero
       $\gamma\in R_{\ge\mathbf{r}}$ and send
       $$\varphi\longmapsto\varphi(\gamma)/\gamma\in R[1/\gamma].$$
@@ -1401,16 +1402,17 @@ Node
     Text
       Yasuda, T. (2026).  {\em An algorithm for the minimal model program in
       dimension three}.
-      @HREF{"https://arxiv.org/abs/2603.13703v2","arXiv:2603.13703v2"}@
+      @HREF{"https://arxiv.org/abs/2603.13703","arXiv:2603.13703"}@
 
       The paper this package implements, and the one every numbered result
-      cited in this documentation belongs to.  The version is fixed at v2 so
-      that those numbers remain unambiguous.  Section 5.1 is the algorithm.
+      cited in this documentation belongs to.  Those numbers are the ones of
+      v3; earlier versions number some results differently.  Section 5.1 is
+      the algorithm.
       The results the code is organized around are Proposition 4.2, the bound
       for a pair of modules, which is @TO bigradedGlobalHomData@; Corollary
       4.3, its specialization to $M=N=R$, which is the bound
       @TO steinHomData@ computes and whose four numbers
-      @TO blockDegreeData@ reads off the ambient ring; and Lemma 5.2, the
+      @TO blockDegreeData@ reads off the ambient ring; and Lemma 5.3, the
       evaluation that gives the strand its multiplication, which is
       @TO evaluateSteinGenerators@.
     Text
