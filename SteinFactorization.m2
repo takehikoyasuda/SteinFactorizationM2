@@ -570,13 +570,23 @@ Node
       algorithm of @TO2 {"Bibliography", "Yasuda (2026)"}@, Section 5.1, into an
       executable prototype.
 
-      The input is the graph of $f$ represented as a bigraded projective
-      scheme.  If $R=S/I_{\Gamma_f}$, then the variables in the source block
-      have degrees $(\ast,0)$ and those in the target block $(0,\ast)$, the
-      starred entries being positive; in the standard case they are $(1,0)$
-      and $(0,1)$, and allowing larger values is what admits weighted
-      projective spaces.  The first block is the ambient space containing $Y$
-      (equivalently its graph), and the second contains $X$.
+      The input is the graph of $f$ represented as the bigraded scheme
+      $\Gamma_f=\operatorname{biProj}R$, $R=S/I_{\Gamma_f}$.  The variables in
+      the source block have degrees $(\ast,0)$ and those in the target block
+      $(0,\ast)$, the starred entries being positive; in the standard case
+      they are $(1,0)$ and $(0,1)$, and allowing larger values is what admits
+      weighted projective spaces.  The first block is the ambient space
+      containing $Y$ (equivalently its graph), and the second contains $X$.
+
+      The algorithm itself is stated over the Deligne--Mumford quotient stacks
+      $$\mathcal{G}_f=[(\operatorname{Spec}R\setminus V(R_\dagger))/\mathbb{G}_m^2],
+      \qquad
+      \mathcal{X}=[(\operatorname{Spec}A\setminus V(A_\dagger))/\mathbb{G}_m],$$
+      built from $R$ and from the coordinate ring $A$ of $X$; their coarse
+      moduli spaces are $\Gamma_f$ and $X$.  Global Hom modules are computed
+      on those stacks.  Nothing about the input or the output changes --- both
+      are bigraded either way --- but this is what licenses keeping every
+      graded piece at once; see @TO steinHomData@.
     Text
       The basic workflow consists of three calls.  For the square map of
       $\mathbb{P}^1$:
@@ -651,6 +661,21 @@ Node
       $X$, not for $\mathcal{O}_Z(1)$.  That is worth knowing before reading
       any output off it: a $Z$ which is $\mathbb{P}^1$ can come back as a
       conic.
+
+      Remark 5.2 of @TO2 {"Bibliography", "Yasuda (2026)"}@ says why the
+      grading is this one, and why every degree is kept rather than only the
+      multiples of the least common multiple $l$ of the weights.  On the
+      quotient stack $\mathcal{X}$ the sheaf $\mathcal{O}_{\mathcal{X}}(v)$ is
+      a line bundle for every $v$, so every graded piece $C_v$ can be
+      retained.  Working on the coarse space instead would restrict the
+      construction to degrees divisible by $l$, that is, to the Veronese
+      subrings $A^{(l)}=\bigoplus_{n\ge0}A_{nl}$ and
+      $C^{(l)}=\bigoplus_{n\ge0}C_{nl}$.  That yields the same morphism
+      $Z\to X$, since passing to a Veronese subring does not change
+      $\operatorname{Proj}$, but it raises the degrees occurring in the
+      computation.  Retaining the smallest indices is generally cheaper, so
+      the stacks are a computational convenience here and not something
+      intrinsic to Stein factorization.
     Text
       The resolution used for the certified bound is often the expensive part.
       When it is infeasible, @TO steinHomDataAtBound@ accepts a bound without
