@@ -566,7 +566,7 @@ Node
       $$Y \xrightarrow{\ h\ } Z \xrightarrow{\ g\ } X$$
       in which $h$ is proper with $h_*\mathcal{O}_Y=\mathcal{O}_Z$ (hence has
       geometrically connected fibres) and $g$ is finite; concretely
-      $Z=\operatorname{Spec}_X f_*\mathcal{O}_Y$.  This package turns the
+      $Z=\mathcal{S}pec_X f_*\mathcal{O}_Y$.  This package turns the
       algorithm of @TO2 {"Bibliography", "Yasuda (2026)"}@, Section 5.1, into an
       executable prototype.
 
