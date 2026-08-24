@@ -91,14 +91,21 @@ M2 -e 'installPackage("SteinFactorization", FileName => "SteinFactorization.m2")
 then `viewHelp SteinFactorization` in an M2 session, or `help
 steinHomData` for one node.
 
-There is deliberately no hosted copy of the manual.  Macaulay2 generates these
-pages for a local installation: the stylesheet, the KaTeX scripts that render
-the mathematics, and every link to a core Macaulay2 node are absolute paths
-into the M2 installation directory.  Served from anywhere else the pages come
-out unstyled, with the mathematics as raw TeX and those links dead, so the html
-directory is not something to upload.  A package's documentation becomes
-properly browsable online by being accepted into the Macaulay2 distribution,
-which is a separate step this prototype has not taken.
+The manual is also published, rebuilt from source on every push to `main`:
+
+**<https://takehikoyasuda.github.io/SteinFactorizationM2/>**
+
+The generated html cannot simply be uploaded.  Macaulay2 writes these pages for
+a local installation: the stylesheet, the KaTeX scripts that render the
+mathematics, and all 92 links to core Macaulay2 nodes are absolute paths into
+the M2 installation directory, so served from anywhere else they come out
+unstyled with the mathematics as raw TeX and those links dead.
+[`.github/make-site.sh`](.github/make-site.sh) repairs that -- it copies the
+style assets in beside the pages, repoints them, and sends the
+core-documentation links to macaulay2.com, which serves the same file names --
+and adds a banner to every page saying this package is not part of the
+Macaulay2 distribution, which is how a package's documentation would otherwise
+come to be online.
 
 ## Main M2 functions
 
