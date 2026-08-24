@@ -6,6 +6,12 @@ Algorithm 2 ([arXiv:2603.13703](https://arxiv.org/abs/2603.13703)).  Numbered
 results are cited by their v3 numbering throughout; earlier versions number
 some of them differently.
 
+### 📖 [Read the manual](https://takehikoyasuda.github.io/SteinFactorizationM2/)
+
+Every function has a worked example there, run by Macaulay2 with its real
+output shown, so what the package computes can be read without installing
+anything.
+
 > **Development status (12 August 2026).**  `directSteinGraph` now follows the
 > revised kernel construction in the paper: it uses the source coordinates and
 > the Stein coordinates, but omits the original target coordinates from the
