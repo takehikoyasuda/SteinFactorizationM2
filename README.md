@@ -178,9 +178,6 @@ research prototype, not verified software.
 
 ## Citation
 
-Metadata for citing this repository is in [CITATION.cff](CITATION.cff); GitHub
-renders it under "Cite this repository".
-
 The algorithm itself is the one in
 [arXiv:2603.13703](https://arxiv.org/abs/2603.13703); cite the paper for the
 mathematics and this repository for the implementation.
