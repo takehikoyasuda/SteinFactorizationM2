@@ -571,12 +571,15 @@ Node
       executable prototype.
 
       The input is the graph of $f$ represented as the bigraded scheme
-      $\Gamma_f=\operatorname{biProj}R$, $R=S/I_{\Gamma_f}$.  The variables in
-      the source block have degrees $(\ast,0)$ and those in the target block
-      $(0,\ast)$, the starred entries being positive; in the standard case
-      they are $(1,0)$ and $(0,1)$, and allowing larger values is what admits
-      weighted projective spaces.  The first block is the ambient space
-      containing $Y$ (equivalently its graph), and the second contains $X$.
+      $\Gamma_f=\operatorname{\mathbf{Proj}}R$, $R=S/I_{\Gamma_f}$, written
+      with the paper's bold $\operatorname{\mathbf{Proj}}$ for the bigraded
+      Proj to keep it apart from the monograded $\operatorname{Proj}$ used
+      below.  The variables in the source block have degrees $(\ast,0)$ and
+      those in the target block $(0,\ast)$, the starred entries being
+      positive; in the standard case they are $(1,0)$ and $(0,1)$, and
+      allowing larger values is what admits weighted projective spaces.  The
+      first block is the ambient space containing $Y$ (equivalently its
+      graph), and the second contains $X$.
 
       The algorithm itself is stated over the Deligne--Mumford quotient stacks
       $$\mathcal{G}_f=[(\operatorname{Spec}R\setminus V(R_\dagger))/\mathbb{G}_m^2],
