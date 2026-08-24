@@ -66,14 +66,39 @@ tests/blowup-line.m2         Bl_L(P3) divisorial contraction
 tests/blowup-twisted-cubic.m2
 ```
 
+## The manual
+
 The construction, the worked examples, and the actual Macaulay2 output are
-documented in the package manual.  Build and browse it with
+documented in the package manual, which is where to read about what the
+functions below do.  Build it and open the printed `file://` link:
 
 ```sh
 make docs
 ```
 
-or, once the package is installed, with `viewHelp SteinFactorization` in M2.
+It lands in `doc-build/share/doc/Macaulay2/SteinFactorization/html/index.html`.
+`make docs` reruns only the examples whose input changed; `make docs-all`
+rebuilds everything from scratch.  Both fail if an example stops working, which
+is deliberate — the examples are the part of the documentation that cannot be
+wrong quietly.
+
+Alternatively, install the package and read it inside M2:
+
+```sh
+M2 -e 'installPackage("SteinFactorization", FileName => "SteinFactorization.m2"); exit 0'
+```
+
+then `viewHelp SteinFactorization` in an M2 session, or `help
+steinHomData` for one node.
+
+There is deliberately no hosted copy of the manual.  Macaulay2 generates these
+pages for a local installation: the stylesheet, the KaTeX scripts that render
+the mathematics, and every link to a core Macaulay2 node are absolute paths
+into the M2 installation directory.  Served from anywhere else the pages come
+out unstyled, with the mathematics as raw TeX and those links dead, so the html
+directory is not something to upload.  A package's documentation becomes
+properly browsable online by being accepted into the Macaulay2 distribution,
+which is a separate step this prototype has not taken.
 
 ## Main M2 functions
 
